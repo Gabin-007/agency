@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SMMA Agency OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07070a;
+  --surface:#0e0e14;
+  --surface2:#14141e;
+  --surface3:#1a1a28;
+  --border:#ffffff0a;
+  --border2:#ffffff15;
+  --border3:#ffffff22;
+  --text:#f0eff8;
+  --muted:#5a5870;
+  --muted2:#8e8ca8;
+  --accent:#7c3aed;
+  --accent2:#2563eb;
+  --neon:#a78bfa;
+  --neon2:#60a5fa;
+  --green:#4ade80;
+  --red:#f87171;
+  --orange:#fb923c;
+  --yellow:#facc15;
+  --pink:#f472b6;
+  --cyan:#67e8f9;
+  --radius:12px;
+  --sidebar:220px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* ── GLOWS ── */
+.g1{position:fixed;top:-200px;left:-100px;width:500px;height:500px;background:radial-gradient(circle,#7c3aed18 0%,transparent 65%);pointer-events:none;z-index:0;}
+.g2{position:fixed;bottom:-200px;right:-100px;width:600px;height:400px;background:radial-gradient(circle,#2563eb15 0%,transparent 65%);pointer-events:none;z-index:0;}
+
+/* ══════════════════════════════
+   LOGIN OVERLAY
+══════════════════════════════ */
+#overlay{position:fixed;inset:0;z-index:2000;background:#07070af8;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);display:flex;align-items:center;justify-content:center;}
+.login-box{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:40px 36px 34px;width:100%;max-width:400px;position:relative;animation:popIn .4s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes popIn{from{opacity:0;transform:scale(.88) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.login-box::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;border-radius:20px 20px 0 0;background:linear-gradient(90deg,transparent 5%,#7c3aed80 40%,#60a5fa80 60%,transparent 95%);}
+.login-logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#7c3aed,#2563eb);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:20px;box-shadow:0 0 24px #7c3aed70;margin:0 auto 18px;}
+.login-title{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;text-align:center;letter-spacing:-.4px;margin-bottom:5px;}
+.login-sub{font-size:12px;color:var(--muted);text-align:center;margin-bottom:26px;line-height:1.6;}
+.field{margin-bottom:13px;}
+.field label{display:block;font-size:10.5px;font-weight:600;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;}
+.field input{width:100%;padding:10px 13px;background:var(--surface2);border:1px solid var(--border2);border-radius:9px;font-family:'Inter',sans-serif;font-size:13.5px;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s;}
+.field input:focus{border-color:#7c3aed80;box-shadow:0 0 0 3px #7c3aed15;}
+.field input::placeholder{color:#ffffff18;}
+#lerr{font-size:11.5px;color:var(--red);text-align:center;margin-bottom:10px;min-height:16px;display:none;}
+#lerr.show{display:block;}
+.login-btn{width:100%;padding:12px;background:linear-gradient(135deg,#7c3aed,#2563eb);border:none;border-radius:9px;font-family:'Syne',sans-serif;font-weight:700;font-size:13.5px;color:#fff;cursor:pointer;transition:opacity .2s;box-shadow:0 0 20px #7c3aed50;margin-top:4px;}
+.login-btn:hover{opacity:.9;}
+.login-hint{font-size:10.5px;color:var(--muted);text-align:center;margin-top:14px;line-height:1.6;}
+
+/* ══════════════════════════════
+   LAYOUT
+══════════════════════════════ */
+#app{display:flex;min-height:100vh;position:relative;z-index:1;}
+
+/* ── SIDEBAR ── */
+aside{
+  width:var(--sidebar);min-width:var(--sidebar);
+  background:var(--surface);
+  border-right:1px solid var(--border2);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;z-index:100;
+  padding:0 0 20px;
+}
+.sb-logo{padding:22px 20px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.sb-mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#2563eb);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;box-shadow:0 0 14px #7c3aed60;flex-shrink:0;}
+.sb-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:14px;letter-spacing:-.2px;}
+.sb-brand span{display:block;font-size:9.5px;color:var(--muted);font-weight:400;margin-top:1px;}
+
+.sb-section{padding:14px 12px 4px;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+.sb-nav{flex:1;padding:6px 10px;overflow-y:auto;}
+.sb-nav::-webkit-scrollbar{width:3px;}
+.sb-nav::-webkit-scrollbar-track{background:transparent;}
+.sb-nav::-webkit-scrollbar-thumb{background:#ffffff15;border-radius:99px;}
+
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;cursor:pointer;transition:all .18s;color:var(--muted2);font-size:12.5px;font-weight:500;margin-bottom:2px;border:1px solid transparent;user-select:none;}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:linear-gradient(135deg,#7c3aed18,#2563eb12);border-color:#7c3aed40;color:var(--neon);box-shadow:0 0 10px #7c3aed15;}
+.nav-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:#f8717130;color:#f87171;font-size:9px;font-weight:700;padding:1px 6px;border-radius:99px;font-family:'Syne',sans-serif;}
+.nav-badge.green{background:#4ade8030;color:#4ade80;}
+
+.sb-user{padding:14px 12px 0;border-top:1px solid var(--border);margin-top:auto;}
+.sb-user-inner{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;cursor:pointer;transition:all .18s;}
+.sb-user-inner:hover{background:var(--surface2);}
+.sb-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#2563eb);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;flex-shrink:0;}
+.sb-uname{font-size:12px;font-weight:500;}
+.sb-logout{font-size:10px;color:var(--muted);margin-top:1px;}
+
+/* ── MAIN ── */
+#main{margin-left:var(--sidebar);flex:1;min-height:100vh;}
+.topbar{padding:18px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:#07070a99;backdrop-filter:blur(12px);position:sticky;top:0;z-index:50;}
+.topbar-title{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;letter-spacing:-.3px;}
+.topbar-sub{font-size:11.5px;color:var(--muted);margin-top:2px;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+
+.page{padding:28px 32px 60px;display:none;}
+.page.active{display:block;animation:fadeUp .35s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:20px 22px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#7c3aed30,transparent);}
+.card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--muted2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px;}
+
+/* ── STAT CARDS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:24px;}
+.stat-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:18px 20px;position:relative;overflow:hidden;transition:border-color .2s;}
+.stat-card:hover{border-color:var(--border3);}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;}
+.stat-icon{font-size:20px;margin-bottom:10px;}
+.stat-val{font-family:'Syne',sans-serif;font-weight:800;font-size:26px;letter-spacing:-.5px;line-height:1;}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:4px;}
+.stat-delta{font-size:10.5px;font-weight:600;margin-top:6px;}
+.delta-up{color:var(--green);}
+.delta-dn{color:var(--red);}
+
+/* ── TABLES ── */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th{text-align:left;padding:8px 12px;color:var(--muted);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--border2);}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#ffffff03;}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:99px;font-size:10px;font-weight:600;}
+.badge-green{background:#4ade8020;color:#4ade80;border:1px solid #4ade8040;}
+.badge-red{background:#f8717120;color:#f87171;border:1px solid #f8717140;}
+.badge-yellow{background:#facc1520;color:#facc15;border:1px solid #facc1540;}
+.badge-blue{background:#60a5fa20;color:#60a5fa;border:1px solid #60a5fa40;}
+.badge-purple{background:#a78bfa20;color:#a78bfa;border:1px solid #a78bfa40;}
+.badge-orange{background:#fb923c20;color:#fb923c;border:1px solid #fb923c40;}
+
+/* ── BUTTONS ── */
+.btn-primary{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:linear-gradient(135deg,#7c3aed,#2563eb);border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:#fff;cursor:pointer;transition:opacity .2s;box-shadow:0 0 16px #7c3aed40;}
+.btn-primary:hover{opacity:.88;}
+.btn-sec{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;color:var(--muted2);cursor:pointer;transition:all .18s;}
+.btn-sec:hover{border-color:var(--border3);color:var(--text);}
+.btn-danger{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;background:#f8717115;border:1px solid #f8717140;border-radius:8px;font-size:12px;font-weight:500;color:#f87171;cursor:pointer;transition:all .18s;}
+.btn-danger:hover{background:#f8717125;}
+
+/* ── FORMS ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-grid.cols3{grid-template-columns:1fr 1fr 1fr;}
+.form-grid.cols1{grid-template-columns:1fr;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg label{font-size:10.5px;font-weight:600;color:var(--muted2);letter-spacing:.06em;text-transform:uppercase;}
+.fg input,.fg select,.fg textarea{padding:9px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .2s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:#7c3aed60;}
+.fg input::placeholder,.fg textarea::placeholder{color:#ffffff18;}
+.fg select option{background:#1a1a28;}
+.fg textarea{resize:vertical;min-height:70px;}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:#000000aa;backdrop-filter:blur(8px);z-index:500;display:none;align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:28px 28px 24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;position:relative;animation:popIn .3s ease both;}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;border-radius:16px 16px 0 0;background:linear-gradient(90deg,transparent,#7c3aed60,transparent);}
+.modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:17px;letter-spacing:-.3px;margin-bottom:20px;}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);}
+.modal-close{position:absolute;top:16px;right:16px;width:28px;height:28px;border-radius:7px;background:var(--surface2);border:1px solid var(--border2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted2);font-size:14px;transition:all .18s;}
+.modal-close:hover{color:var(--text);}
+
+/* ── PROGRESS BAR ── */
+.prog-bar{height:5px;background:var(--border2);border-radius:99px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:99px;transition:width .4s ease;}
+
+/* ── SECTION HEADER ── */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+.sec-hdr h2{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;letter-spacing:-.3px;}
+.sec-hdr p{font-size:11.5px;color:var(--muted);margin-top:2px;}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:48px 20px;color:var(--muted);}
+.empty .ei{font-size:40px;margin-bottom:12px;opacity:.4;}
+.empty p{font-size:13px;}
+
+/* ── KANBAN ── */
+.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.kol{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;}
+.kol-hdr{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.kol-count{background:var(--surface3);border-radius:99px;padding:1px 7px;font-size:10px;color:var(--muted);}
+.kcard{background:var(--surface);border:1px solid var(--border2);border-radius:9px;padding:11px 12px;margin-bottom:8px;cursor:pointer;transition:all .18s;}
+.kcard:hover{border-color:var(--border3);transform:translateY(-1px);}
+.kcard-name{font-size:12.5px;font-weight:500;margin-bottom:4px;}
+.kcard-meta{font-size:10.5px;color:var(--muted);}
+
+/* ── CONTRACT LOCK ── */
+.lock-overlay{position:absolute;inset:0;background:#07070af0;backdrop-filter:blur(8px);z-index:10;display:flex;align-items:center;justify-content:center;border-radius:var(--radius);}
+.lock-box{text-align:center;padding:32px;}
+.lock-icon{font-size:40px;margin-bottom:14px;}
+.lock-title{font-family:'Syne',sans-serif;font-weight:700;font-size:17px;margin-bottom:6px;}
+.lock-sub{font-size:12px;color:var(--muted);margin-bottom:20px;}
+.lock-input{padding:10px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);outline:none;width:220px;text-align:center;display:block;margin:0 auto 12px;}
+.lock-input:focus{border-color:#7c3aed60;}
+.lock-err{font-size:11px;color:var(--red);margin-bottom:10px;min-height:16px;}
+
+/* ── TOPBAR LINK BUTTON ── */
+.btn-link{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;background:linear-gradient(135deg,#7c3aed18,#2563eb12);border:1px solid #7c3aed50;border-radius:8px;font-size:12px;font-weight:500;color:var(--neon);cursor:pointer;transition:all .2s;text-decoration:none;}
+.btn-link:hover{background:linear-gradient(135deg,#7c3aed28,#2563eb20);box-shadow:0 0 12px #7c3aed30;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  aside{width:60px;min-width:60px;}
+  .sb-brand,.nav-item span,.sb-uname,.sb-logout,.sb-section{display:none;}
+  #main{margin-left:60px;}
+  .page{padding:20px 16px 60px;}
+  .kanban{grid-template-columns:1fr 1fr;}
+  .form-grid{grid-template-columns:1fr;}
+  .form-grid.cols3{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="g1"></div><div class="g2"></div>
+
+<!-- ══ LOGIN ══ -->
+<div id="overlay">
+  <div class="login-box">
+    <div class="login-logo">A</div>
+    <div class="login-title">Agency OS</div>
+    <div class="login-sub">Connecte-toi pour accéder à ton espace.<br>Première visite ? Ton compte sera créé automatiquement.</div>
+    <div class="field"><label>Nom d'utilisateur</label><input type="text" id="lu" placeholder="ex: thomas" autocomplete="username"/></div>
+    <div class="field"><label>Mot de passe</label><input type="password" id="lp" placeholder="••••••••" autocomplete="current-password"/></div>
+    <div id="lerr"></div>
+    <button class="login-btn" id="lbtn">Accéder à mon espace →</button>
+    <div class="login-hint">Données sauvegardées localement • Accès contrats : mot de passe + "CONTRAT"</div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <aside>
+    <div class="sb-logo">
+      <div class="sb-mark">A</div>
+      <div class="sb-brand">Agency OS<span>Gestion interne</span></div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-section">Principal</div>
+      <div class="nav-item active" data-page="dashboard">
+        <span class="nav-icon">◈</span><span>Dashboard</span>
+      </div>
+      <div class="nav-item" data-page="clients">
+        <span class="nav-icon">◎</span><span>Clients</span>
+        <span class="nav-badge green" id="badge-clients">0</span>
+      </div>
+      <div class="nav-item" data-page="pipeline">
+        <span class="nav-icon">▦</span><span>Pipeline</span>
+      </div>
+      <div class="sb-section">Finance</div>
+      <div class="nav-item" data-page="finance">
+        <span class="nav-icon">◇</span><span>Trésorerie</span>
+      </div>
+      <div class="nav-item" data-page="budget">
+        <span class="nav-icon">◉</span><span>Budget Pub</span>
+      </div>
+      <div class="nav-item" data-page="patrimoine">
+        <span class="nav-icon">▷</span><span>Patrimoine</span>
+      </div>
+      <div class="sb-section">Opérations</div>
+      <div class="nav-item" data-page="livrables">
+        <span class="nav-icon">✦</span><span>Livrables</span>
+        <span class="nav-badge" id="badge-tasks">0</span>
+      </div>
+      <div class="nav-item" data-page="equipe">
+        <span class="nav-icon">◐</span><span>Équipe</span>
+      </div>
+      <div class="nav-item" data-page="outils">
+        <span class="nav-icon">⚙</span><span>Outils</span>
+      </div>
+      <div class="nav-item" data-page="contrats">
+        <span class="nav-icon">🔒</span><span>Contrats</span>
+      </div>
+      <div class="sb-section">Liens</div>
+      <div class="nav-item" data-page="tracker">
+        <span class="nav-icon">→</span><span>Tracker SMMA</span>
+      </div>
+    </div>
+    <div class="sb-user">
+      <div class="sb-user-inner" id="sb-logout">
+        <div class="sb-avatar" id="sb-av">?</div>
+        <div>
+          <div class="sb-uname" id="sb-uname">—</div>
+          <div class="sb-logout">Se déconnecter</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div id="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="tb-title">Dashboard</div>
+        <div class="topbar-sub" id="tb-sub">Vue d'ensemble de l'agence</div>
+      </div>
+      <div class="topbar-right">
+        <a class="btn-link" href="https://gabin-007.github.io/smma-studio/" target="_blank">↗ SMMA Tracker</a>
+      </div>
+    </div>
+
+    <!-- ════ DASHBOARD ════ -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-grid" id="dash-stats"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+        <div class="card">
+          <div class="card-title">Clients actifs — MRR</div>
+          <div id="dash-clients-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Tâches urgentes</div>
+          <div id="dash-tasks-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="card">
+          <div class="card-title">Factures en attente</div>
+          <div id="dash-invoices"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Prospection — Pipeline</div>
+          <div id="dash-pipeline"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ CLIENTS ════ -->
+    <div class="page" id="page-clients">
+      <div class="sec-hdr">
+        <div><h2>Clients</h2><p>Gestion des comptes actifs et historique</p></div>
+        <button class="btn-primary" id="btn-add-client">+ Nouveau client</button>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap">
+          <table id="clients-table">
+            <thead><tr>
+              <th>Nom / Entreprise</th><th>Secteur</th><th>Budget mensuel</th><th>Retainer</th><th>Statut</th><th>Depuis</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="clients-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ PIPELINE ════ -->
+    <div class="page" id="page-pipeline">
+      <div class="sec-hdr">
+        <div><h2>Pipeline de prospection</h2><p>Suivi des prospects de la prise de contact au closing</p></div>
+        <button class="btn-primary" id="btn-add-prospect">+ Nouveau prospect</button>
+      </div>
+      <div class="kanban" id="kanban-board"></div>
+    </div>
+
+    <!-- ════ FINANCE ════ -->
+    <div class="page" id="page-finance">
+      <div class="sec-hdr">
+        <div><h2>Trésorerie</h2><p>Revenus, dépenses et projection</p></div>
+        <button class="btn-primary" id="btn-add-tx">+ Transaction</button>
+      </div>
+      <div class="stats-grid" id="fin-stats"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="card">
+          <div class="card-title">Transactions récentes</div>
+          <div id="tx-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Factures</div>
+          <button class="btn-sec" style="margin-bottom:12px;font-size:11.5px;" id="btn-add-invoice">+ Facture</button>
+          <div id="invoice-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ BUDGET PUB ════ -->
+    <div class="page" id="page-budget">
+      <div class="sec-hdr">
+        <div><h2>Budget Publicité</h2><p>Suivi des dépenses pub par client</p></div>
+      </div>
+      <div id="budget-list" style="display:flex;flex-direction:column;gap:12px;"></div>
+    </div>
+
+    <!-- ════ PATRIMOINE ════ -->
+    <div class="page" id="page-patrimoine">
+      <div class="sec-hdr">
+        <div><h2>Patrimoine & Objectifs</h2><p>Revenus cumulés, épargne et objectifs personnels</p></div>
+        <button class="btn-primary" id="btn-add-goal">+ Objectif</button>
+      </div>
+      <div class="stats-grid" id="pat-stats"></div>
+      <div class="card" style="margin-top:16px;">
+        <div class="card-title">Objectifs financiers</div>
+        <div id="goals-list" style="display:flex;flex-direction:column;gap:12px;margin-top:4px;"></div>
+      </div>
+    </div>
+
+    <!-- ════ LIVRABLES ════ -->
+    <div class="page" id="page-livrables">
+      <div class="sec-hdr">
+        <div><h2>Livrables & Tâches</h2><p>Suivi des missions par client</p></div>
+        <button class="btn-primary" id="btn-add-task">+ Tâche</button>
+      </div>
+      <div id="tasks-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+    <!-- ════ ÉQUIPE ════ -->
+    <div class="page" id="page-equipe">
+      <div class="sec-hdr">
+        <div><h2>Équipe & Freelances</h2><p>Prestataires, tarifs et missions</p></div>
+        <button class="btn-primary" id="btn-add-member">+ Prestataire</button>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Nom</th><th>Spécialité</th><th>Tarif</th><th>Missions actives</th><th>Éval.</th><th>Actions</th></tr></thead>
+            <tbody id="team-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ OUTILS ════ -->
+    <div class="page" id="page-outils">
+      <div class="sec-hdr">
+        <div><h2>Suite d'outils</h2><p>Abonnements SaaS et coûts fixes</p></div>
+        <button class="btn-primary" id="btn-add-tool">+ Outil</button>
+      </div>
+      <div class="stats-grid" id="tools-stats"></div>
+      <div class="card" style="margin-top:16px;">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Outil</th><th>Catégorie</th><th>Coût/mois</th><th>Renouvellement</th><th>Statut</th><th>Actions</th></tr></thead>
+            <tbody id="tools-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ CONTRATS ════ -->
+    <div class="page" id="page-contrats" style="position:relative;min-height:400px;">
+      <div class="sec-hdr">
+        <div><h2>Contrats clients</h2><p>Zone sécurisée — accès restreint</p></div>
+        <button class="btn-primary" id="btn-add-contract" style="display:none;">+ Ajouter contrat</button>
+      </div>
+      <div id="contracts-locked" class="card" style="min-height:360px;position:relative;">
+        <div class="lock-overlay" id="lock-overlay">
+          <div class="lock-box">
+            <div class="lock-icon">🔐</div>
+            <div class="lock-title">Zone sécurisée</div>
+            <div class="lock-sub">Entre ton mot de passe suivi de "CONTRAT"<br><span style="color:var(--muted2)">ex : monmotdepasseCONTRAT</span></div>
+            <input type="password" class="lock-input" id="lock-inp" placeholder="••••••••CONTRAT"/>
+            <div class="lock-err" id="lock-err"></div>
+            <button class="btn-primary" style="width:160px;font-size:12.5px;" id="lock-btn">Déverrouiller</button>
+          </div>
+        </div>
+        <div id="contracts-content" style="display:none;">
+          <div id="contracts-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ TRACKER LINK ════ -->
+    <div class="page" id="page-tracker">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;gap:20px;">
+        <div style="font-size:60px;">🚀</div>
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:24px;margin-bottom:8px;">SMMA Studio Tracker</div>
+          <div style="font-size:14px;color:var(--muted);max-width:400px;line-height:1.6;">Suis l'avancement de la création de ton agence étape par étape avec le tableau de bord dédié.</div>
+        </div>
+        <a href="https://gabin-007.github.io/smma-studio/" target="_blank" class="btn-primary" style="font-size:14px;padding:12px 28px;gap:8px;">
+          ↗ Ouvrir SMMA Studio Tracker
+        </a>
+        <div style="font-size:11px;color:var(--muted);">Ouvre dans un nouvel onglet</div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ══ MODALS ══ -->
+<!-- Client modal -->
+<div class="modal-bg" id="modal-client">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-client')">✕</button>
+    <div class="modal-title" id="modal-client-title">Nouveau client</div>
+    <div class="form-grid">
+      <div class="fg"><label>Nom / Entreprise</label><input id="c-name" placeholder="Acme Corp"/></div>
+      <div class="fg"><label>Contact</label><input id="c-contact" placeholder="Jean Dupont"/></div>
+      <div class="fg"><label>Email</label><input id="c-email" type="email" placeholder="jean@acme.fr"/></div>
+      <div class="fg"><label>Téléphone</label><input id="c-phone" placeholder="+33 6 ..."/></div>
+      <div class="fg"><label>Secteur</label><input id="c-sector" placeholder="E-commerce"/></div>
+      <div class="fg"><label>Retainer mensuel (€)</label><input id="c-retainer" type="number" placeholder="2000"/></div>
+      <div class="fg"><label>Budget pub mensuel (€)</label><input id="c-adbudget" type="number" placeholder="5000"/></div>
+      <div class="fg"><label>Statut</label>
+        <select id="c-status">
+          <option value="actif">Actif</option>
+          <option value="pause">En pause</option>
+          <option value="churné">Churné</option>
+          <option value="onboarding">Onboarding</option>
+        </select>
+      </div>
+      <div class="fg"><label>Date de début</label><input id="c-start" type="date"/></div>
+      <div class="fg"><label>Objectif client</label><input id="c-goal" placeholder="Génération de leads"/></div>
+    </div>
+    <div class="form-grid cols1" style="margin-top:12px;">
+      <div class="fg"><label>Notes internes</label><textarea id="c-notes" placeholder="Infos importantes, contexte..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sec" onclick="closeModal('modal-client')">Annuler</button>
+      <button class="btn-primary" id="btn-save-client">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Prospect modal -->
+<div class="modal-bg" id="modal-prospect">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-prospect')">✕</button>
+    <div class="modal-title">Nouveau prospect</div>
+    <div class="form-grid">
+      <div class="fg"><label>Nom / Entreprise</label><input id="p-name" placeholder="Startup XYZ"/></div>
+      <div class="fg"><label>Contact</label><input id="p-contact" placeholder="Marie Martin"/></div>
+      <div class="fg"><label>Email</label><input id="p-email" type="email" placeholder="marie@xyz.fr"/></div>
+      <div class="fg"><label>Secteur</label><input id="p-sector" placeholder="SaaS"/></div>
+      <div class="fg"><label>Budget estimé (€)</label><input id="p-budget" type="number" placeholder="1500"/></div>
+      <div class="fg"><label>Étape</label>
+        <select id="p-stage">
+          <option value="contacté">Contacté</option>
+          <option value="répondu">A répondu</option>
+          <option value="démo">Démo planifiée</option>
+          <option value="closing">Closing</option>
+        </select>
+      </div>
+      <div class="fg"><label>Canal</label>
+        <select id="p-channel">
+          <option value="LinkedIn">LinkedIn</option>
+          <option value="Cold email">Cold email</option>
+          <option value="Référence">Référence</option>
+          <option value="Inbound">Inbound</option>
+          <option value="Autre">Autre</option>
+        </select>
+      </div>
+      <div class="fg"><label>Prochain RDV</label><input id="p-next" type="date"/></div>
+    </div>
+    <div class="form-grid cols1" style="margin-top:12px;">
+      <div class="fg"><label>Notes</label><textarea id="p-notes" placeholder="Contexte, objections..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sec" onclick="closeModal('modal-prospect')">Annuler</button>
+      <button class="btn-primary" id="btn-save-prospect">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Transaction modal -->
+<div class="modal-bg" id="modal-tx">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-tx')">✕</button>
+    <div class="modal-title">Nouvelle transaction</div>
+    <div class="form-grid">
+      <div class="fg"><label>Type</label>
+        <select id="tx-type"><option value="revenu">Revenu</option><option value="dépense">Dépense</option></select>
+      </div>
+      <div class="fg"><label>Montant (€)</label><input id="tx-amount" type="number" placeholder="2500"/></div>
+      <div class="fg"><label>Catégorie</label>
+        <select id="tx-cat">
+          <option>Retainer client</option><option>Commission</option><option>Outil SaaS</option>
+          <option>Freelance</option><option>Publicité</option><option>Formation</option>
+          <option>Équipement</option><option>Autre</option>
+        </select>
+      </div>
+      <div class="fg"><label>Date</label><input id="tx-date" type="date"/></div>
+      <div class="fg cols1"><label>Description</label><input id="tx-desc" placeholder="Retainer client Acme — Juin"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sec" onclick="closeModal('modal-tx')">Annuler</button>
+      <button class="btn-primary" id="btn-save-tx">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Invoice modal -->
+<div class="modal-bg" id="modal-invoice">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-invoice')">✕</button>
+    <div class="modal-title">Nouvelle facture</div>
+    <div class="form-grid">
+      <div class="fg"><label>Client</label><input id="inv-client" placeholder="Acme Corp"/></div>
+      <div class="fg"><label>Montant (€)</label><input id="inv-amount" type="number" placeholder="3000"/></div>
+      <div class="fg"><label>Date d'émission</label><input id="inv-date" type="date"/></div>
+      <div class="fg"><label>Échéance</label><input id="inv-due" type="date"/></div>
+      <div class="fg"><label>Statut</label>
+        <select id="inv-status"><option value="en attente">En attente</option><option value="payée">Payée</option><option value="en retard">En retard</option></select>
+      </div>
+      <div class="fg"><label>Numéro facture</label><input id="inv-num" placeholder="FAC-2024-001"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sec" onclick="closeModal('modal-invoice')">Annuler</button>
+      <button class="btn-primary" id="btn-save-invoice">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Task modal -->
+<div class="modal-bg" id="modal-task">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-task')">✕</button>
+    <div class="modal-title">Nouvelle tâche</div>
+    <div class="form-grid">
+      <div class="fg"><label>Titre</label><input id="t-title" placeholder="Créer les visuels Juillet"/></div>
+      <div class="fg"><label>Client</label><input id="t-client" placeholder="Acme Corp"/></div>
+      <div class="fg"><label>Priorité</label>
+        <select id="t-priority"><option value="haute">Haute</option><option value="normale">Normale</option><option value="basse">Basse</option></select>
+      </div>
+      <div class="fg"><label>Statut</label>
+        <select id="t-status"><option value="à faire">À faire</option><option value="en cours">En cours</option><option value="livré">Livré</option><option value="validé">Validé</option></select>
+      </div>
+      <div class="fg"><label>Deadline</label><input id="t-deadline" type="date"/></div>
+      <div class="fg"><label>Assigné à</label><input id="t-assign" placeholder="Thomas"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sec" onclick="closeModal('modal-task')">Annuler</button>
+      <button class="btn-primary" id="btn-save-task">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Team modal -->
+<div class="modal-bg" id="modal-member">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-member')">✕</button>
+    <div class="modal-title">Nouveau prestataire</div>
+    <div class="form-grid">
+      <div class="fg"><label>Nom</label><input id="m-name" placeholder="Sarah L."/></div>
+      <div class="fg"><label>Spécialité</label><input id="m-spec" placeholder="Motion design"/></div>
+      <div class="fg"><label>Tarif journalier (€)</label><input id="m-rate" type="number" placeholder="300"/></div>
+      <div class="fg"><label>Email</label><input id="m-email" type="email" placeholder="sarah@mail.fr"/></div>
+      <div class="fg"><label>Évaluation (1-5)</label><input id="m-eval" type="number" min="1" max="5" placeholder="5"/></div>
+      <div class="fg"><label>Missions actives</label><input id="m-missions" placeholder="Acme, Beta SaaS"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sec" onclick="closeModal('modal-member')">Annuler</button>
+      <button class="btn-primary" id="btn-save-member">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tool modal -->
+<div class="modal-bg" id="modal-tool">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-tool')">✕</button>
+    <div class="modal-title">Nouvel outil</div>
+    <div class="form-grid">
+      <div class="fg"><label>Nom</label><input id="o-name" placeholder="Notion"/></div>
+      <div class="fg"><label>Catégorie</label>
+        <select id="o-cat"><option>CRM</option><option>Design</option><option>Publicité</option><option>Automatisation</option><option>Communication</option><option>Analytics</option><option>Comptabilité</option><option>Autre</option></select>
+      </div>
+      <div class="fg"><label>Coût/mois (€)</label><input id="o-cost" type="number" placeholder="20"/></div>
+      <div class="fg"><label>Renouvellement</label><input id="o-renew" type="date"/></div>
+      <div class="fg"><label>Statut</label>
+        <select id="o-status"><option value="actif">Actif</option><option value="pause">En pause</option><option value="annulé">Annulé</option></select>
+      </div>
+      <div class="fg"><label>Lien</label><input id="o-link" placeholder="https://notion.so"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sec" onclick="closeModal('modal-tool')">Annuler</button>
+      <button class="btn-primary" id="btn-save-tool">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Goal modal -->
+<div class="modal-bg" id="modal-goal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-goal')">✕</button>
+    <div class="modal-title">Nouvel objectif</div>
+    <div class="form-grid">
+      <div class="fg"><label>Objectif</label><input id="g-name" placeholder="Acheter une voiture"/></div>
+      <div class="fg"><label>Montant cible (€)</label><input id="g-target" type="number" placeholder="15000"/></div>
+      <div class="fg"><label>Montant actuel (€)</label><input id="g-current" type="number" placeholder="3000"/></div>
+      <div class="fg"><label>Date cible</label><input id="g-date" type="date"/></div>
+      <div class="fg"><label>Icône</label><input id="g-icon" placeholder="🚗" maxlength="2"/></div>
+      <div class="fg"><label>Catégorie</label>
+        <select id="g-cat"><option>Véhicule</option><option>Immobilier</option><option>Investissement</option><option>Voyage</option><option>Épargne</option><option>Matériel</option><option>Autre</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sec" onclick="closeModal('modal-goal')">Annuler</button>
+      <button class="btn-primary" id="btn-save-goal">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Contract modal -->
+<div class="modal-bg" id="modal-contract">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-contract')">✕</button>
+    <div class="modal-title">Ajouter un contrat</div>
+    <div class="form-grid">
+      <div class="fg"><label>Client</label><input id="ct-client" placeholder="Acme Corp"/></div>
+      <div class="fg"><label>Type</label>
+        <select id="ct-type"><option>Prestation de services</option><option>Mandat publicitaire</option><option>NDA</option><option>Partenariat</option><option>Autre</option></select>
+      </div>
+      <div class="fg"><label>Date de signature</label><input id="ct-date" type="date"/></div>
+      <div class="fg"><label>Valeur (€)</label><input id="ct-value" type="number" placeholder="24000"/></div>
+    </div>
+    <div class="form-grid cols1" style="margin-top:12px;">
+      <div class="fg"><label>Fichier PDF</label><input id="ct-file" type="file" accept=".pdf" style="padding:8px;font-size:12px;"/></div>
+      <div class="fg"><label>Notes</label><textarea id="ct-notes" placeholder="Durée, clauses importantes..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sec" onclick="closeModal('modal-contract')">Annuler</button>
+      <button class="btn-primary" id="btn-save-contract">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════
+   STORAGE
+══════════════════════════════════════════════════ */
+const _mem = {};
+function lsGet(k){try{return localStorage.getItem(k);}catch{return _mem[k]??null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch{}; _mem[k]=v;}
+function lsRm(k){try{localStorage.removeItem(k);}catch{}; delete _mem[k];}
+
+/* ══════════════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════════════ */
+const UK='aos_users_v1', SK='aos_sess_v1';
+function getUsers(){try{return JSON.parse(lsGet(UK))||{};}catch{return{};}}
+function saveUsers(u){lsSet(UK,JSON.stringify(u));}
+let CU=null; // current user
+
+function hash(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return h.toString(16);}
+
+function tryLogin(u,p){
+  u=u.trim().toLowerCase().replace(/\s+/g,'_');
+  if(!u||!p)return{ok:false,msg:'Remplis les deux champs.'};
+  if(u.length<2)return{ok:false,msg:'Nom trop court.'};
+  if(p.length<4)return{ok:false,msg:'Mot de passe trop court (min 4).'};
+  const users=getUsers();
+  if(users[u]){
+    if(users[u].hash!==hash(p))return{ok:false,msg:'Mot de passe incorrect.'};
+    return{ok:true,username:u};
+  }
+  users[u]={hash:hash(p),created:Date.now()};
+  saveUsers(users);
+  return{ok:true,username:u,isNew:true};
+}
+
+function dk(u){return 'aos_data_'+u;}
+function loadD(u){try{return JSON.parse(lsGet(dk(u)))||initData();}catch{return initData();}}
+function saveD(){lsSet(dk(CU),JSON.stringify(DB));}
+
+function initData(){
+  return{clients:[],prospects:[],transactions:[],invoices:[],tasks:[],team:[],tools:[],goals:[],contracts:[],patrimoine:{cumRevenue:0,cumExpense:0,savings:0}};
+}
+
+let DB={};
+
+/* login UI */
+function showErr(m){const e=document.getElementById('lerr');e.textContent=m;e.style.display='block';}
+function hideErr(){document.getElementById('lerr').style.display='none';}
+
+function doLogin(){
+  hideErr();
+  const u=document.getElementById('lu').value;
+  const p=document.getElementById('lp').value;
+  const r=tryLogin(u,p);
+  if(!r.ok){showErr(r.msg);return;}
+  CU=r.username;
+  lsSet(SK,CU);
+  DB=loadD(CU);
+  initApp();
+  document.getElementById('overlay').style.display='none';
+}
+
+document.getElementById('lbtn').onclick=doLogin;
+document.getElementById('lp').onkeydown=e=>{if(e.key==='Enter')doLogin();};
+document.getElementById('lu').onkeydown=e=>{if(e.key==='Enter')document.getElementById('lp').focus();};
+
+// auto session
+const _sess=lsGet(SK);
+if(_sess){const _users=getUsers();if(_users[_sess]){CU=_sess;DB=loadD(CU);document.getElementById('overlay').style.display='none';}}
+
+/* ══════════════════════════════════════════════════
+   INIT APP
+══════════════════════════════════════════════════ */
+function initApp(){
+  document.getElementById('sb-av').textContent=CU[0].toUpperCase();
+  document.getElementById('sb-uname').textContent=CU;
+  document.getElementById('sb-logout').onclick=()=>{lsRm(SK);CU=null;DB={};document.getElementById('overlay').style.display='flex';};
+  renderAll();
+}
+if(CU)initApp();
+
+/* ══════════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════════ */
+const PAGES={
+  dashboard:{title:'Dashboard',sub:'Vue d\'ensemble de l\'agence'},
+  clients:{title:'Clients',sub:'Gestion des comptes actifs'},
+  pipeline:{title:'Pipeline',sub:'Suivi des prospects'},
+  finance:{title:'Trésorerie',sub:'Revenus, dépenses et factures'},
+  budget:{title:'Budget Publicité',sub:'Dépenses pub par client'},
+  patrimoine:{title:'Patrimoine',sub:'Revenus cumulés et objectifs'},
+  livrables:{title:'Livrables',sub:'Tâches et missions'},
+  equipe:{title:'Équipe',sub:'Freelances et prestataires'},
+  outils:{title:'Outils',sub:'Abonnements SaaS'},
+  contrats:{title:'Contrats',sub:'Zone sécurisée'},
+  tracker:{title:'SMMA Tracker',sub:'Progression de l\'agence'},
+};
+
+document.querySelectorAll('.nav-item').forEach(item=>{
+  item.addEventListener('click',()=>{
+    const p=item.dataset.page;
+    document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+    item.classList.add('active');
+    document.querySelectorAll('.page').forEach(pg=>pg.classList.remove('active'));
+    document.getElementById('page-'+p).classList.add('active');
+    document.getElementById('tb-title').textContent=PAGES[p]?.title||p;
+    document.getElementById('tb-sub').textContent=PAGES[p]?.sub||'';
+    if(p==='contrats') resetLock();
+  });
+});
+
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-bg').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
+
+/* ══════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════ */
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function fmt(n){return'€'+(+n||0).toLocaleString('fr-FR');}
+function fmtDate(d){if(!d)return'—';const dt=new Date(d);return dt.toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});}
+function stars(n){return'★'.repeat(Math.min(5,+n||0))+'☆'.repeat(Math.max(0,5-(+n||0)));}
+function isOverdue(d){return d&&new Date(d)<new Date();}
+
+/* ══════════════════════════════════════════════════
+   RENDER ALL
+══════════════════════════════════════════════════ */
+function renderAll(){
+  renderDashboard();
+  renderClients();
+  renderPipeline();
+  renderFinance();
+  renderBudget();
+  renderPatrimoine();
+  renderLivrables();
+  renderTeam();
+  renderTools();
+  renderContracts();
+  updateBadges();
+}
+
+/* ══════════════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════════════ */
+function renderDashboard(){
+  const active=DB.clients.filter(c=>c.status==='actif');
+  const mrr=active.reduce((s,c)=>s+(+c.retainer||0),0);
+  const pending=DB.invoices.filter(i=>i.status==='en attente');
+  const pendingAmt=pending.reduce((s,i)=>s+(+i.amount||0),0);
+  const openProspects=DB.prospects.filter(p=>p.stage!=='closing').length;
+  const urgentTasks=DB.tasks.filter(t=>t.priority==='haute'&&t.status!=='validé');
+
+  document.getElementById('dash-stats').innerHTML=`
+    ${statCard('◎','MRR','<span style="color:var(--green)">${fmt(mrr)}</span>',active.length+' client'+(active.length>1?'s':''),'var(--green)')}
+    ${statCard('◇','Factures en attente','<span style="color:var(--yellow)">${fmt(pendingAmt)}</span>',pending.length+' facture'+(pending.length>1?'s':''),'var(--yellow)')}
+    ${statCard('▦','Prospects actifs','<span style="color:var(--cyan)">${openProspects}</span>','Dans le pipeline','var(--cyan)')}
+    ${statCard('✦','Tâches urgentes','<span style="color:var(--red)">${urgentTasks.length}</span>','Priorité haute','var(--red)')}
+  `;
+
+  // clients list
+  const cl=document.getElementById('dash-clients-list');
+  if(!active.length){cl.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">Aucun client actif</div>';return;}
+  cl.innerHTML=active.slice(0,5).map(c=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-size:13px;font-weight:500;">${c.name}</div>
+        <div style="font-size:10.5px;color:var(--muted);">${c.sector||'—'}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--green)">${fmt(c.retainer)}</div>
+        <div style="font-size:10px;color:var(--muted);">retainer</div>
+      </div>
+    </div>`).join('');
+
+  // tasks
+  const tl=document.getElementById('dash-tasks-list');
+  const ut=urgentTasks.slice(0,5);
+  if(!ut.length){tl.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">Aucune tâche urgente 🎉</div>';return;}
+  tl.innerHTML=ut.map(t=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-size:12.5px;font-weight:500;">${t.title}</div>
+        <div style="font-size:10.5px;color:var(--muted);">${t.client||'—'} ${t.deadline?'• '+fmtDate(t.deadline):''}</div>
+      </div>
+      ${statusBadge(t.status)}
+    </div>`).join('');
+
+  // invoices dash
+  document.getElementById('dash-invoices').innerHTML = pending.length
+    ? pending.slice(0,4).map(i=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px;">
+        <span>${i.client}</span><span style="color:var(--yellow);font-family:'Syne',sans-serif;font-weight:700;">${fmt(i.amount)}</span>
+      </div>`).join('')
+    : '<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">Aucune facture en attente</div>';
+
+  // pipeline dash
+  document.getElementById('dash-pipeline').innerHTML = DB.prospects.length
+    ? ['contacté','répondu','démo','closing'].map(s=>{
+        const n=DB.prospects.filter(p=>p.stage===s).length;
+        return`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px;">
+          <span style="color:var(--muted2)">${s.charAt(0).toUpperCase()+s.slice(1)}</span>
+          <span style="font-family:'Syne',sans-serif;font-weight:700;">${n}</span>
+        </div>`;}).join('')
+    : '<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">Pipeline vide</div>';
+}
+
+function statCard(icon,lbl,val,sub,color){
+  return`<div class="stat-card" style="border-top:2px solid ${color}30;">
+    <div class="stat-icon">${icon}</div>
+    <div class="stat-val">${val}</div>
+    <div class="stat-lbl">${lbl}</div>
+    <div class="stat-delta" style="color:${color}">${sub}</div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════════
+   CLIENTS
+══════════════════════════════════════════════════ */
+document.getElementById('btn-add-client').onclick=()=>{
+  clearClientForm();
+  document.getElementById('modal-client-title').textContent='Nouveau client';
+  document.getElementById('btn-save-client').dataset.editId='';
+  openModal('modal-client');
+};
+
+document.getElementById('btn-save-client').onclick=()=>{
+  const id=document.getElementById('btn-save-client').dataset.editId;
+  const obj={
+    id:id||uid(), name:v('c-name'), contact:v('c-contact'), email:v('c-email'),
+    phone:v('c-phone'), sector:v('c-sector'), retainer:v('c-retainer'),
+    adbudget:v('c-adbudget'), status:v('c-status'), start:v('c-start'),
+    goal:v('c-goal'), notes:v('c-notes'), adSpent:0
+  };
+  if(!obj.name){alert('Nom requis');return;}
+  if(id){const i=DB.clients.findIndex(c=>c.id===id);if(i>-1)DB.clients[i]=obj;}
+  else DB.clients.push(obj);
+  saveD();renderAll();closeModal('modal-client');
+};
+
+function clearClientForm(){['c-name','c-contact','c-email','c-phone','c-sector','c-retainer','c-adbudget','c-start','c-goal','c-notes'].forEach(i=>document.getElementById(i).value='');document.getElementById('c-status').value='actif';}
+
+function renderClients(){
+  const tb=document.getElementById('clients-tbody');
+  if(!DB.clients.length){tb.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="ei">◎</div><p>Aucun client — ajoutez votre premier compte</p></div></td></tr>`;return;}
+  tb.innerHTML=DB.clients.map(c=>`<tr>
+    <td><div style="font-weight:500;">${c.name}</div><div style="font-size:10.5px;color:var(--muted)">${c.contact||''}</div></td>
+    <td>${c.sector||'—'}</td>
+    <td style="font-family:'Syne',sans-serif;font-weight:700;color:var(--green)">${fmt(c.adbudget||0)}</td>
+    <td style="font-family:'Syne',sans-serif;font-weight:700;color:var(--neon)">${fmt(c.retainer||0)}</td>
+    <td>${clientStatusBadge(c.status)}</td>
+    <td style="color:var(--muted);font-size:11.5px;">${fmtDate(c.start)}</td>
+    <td><div style="display:flex;gap:6px;">
+      <button class="btn-sec" style="padding:4px 9px;font-size:11px;" onclick="editClient('${c.id}')">Éditer</button>
+      <button class="btn-danger" style="padding:4px 9px;font-size:11px;" onclick="delClient('${c.id}')">✕</button>
+    </div></td>
+  </tr>`).join('');
+  document.getElementById('badge-clients').textContent=DB.clients.filter(c=>c.status==='actif').length;
+}
+
+function clientStatusBadge(s){
+  const m={actif:'green',pause:'yellow',churné:'red',onboarding:'blue'};
+  return`<span class="badge badge-${m[s]||'blue'}">${s}</span>`;
+}
+
+function editClient(id){
+  const c=DB.clients.find(x=>x.id===id);if(!c)return;
+  ['name','contact','email','phone','sector','retainer','adbudget','start','goal','notes'].forEach(k=>{const el=document.getElementById('c-'+k);if(el)el.value=c[k]||'';});
+  document.getElementById('c-status').value=c.status||'actif';
+  document.getElementById('modal-client-title').textContent='Modifier client';
+  document.getElementById('btn-save-client').dataset.editId=id;
+  openModal('modal-client');
+}
+function delClient(id){if(confirm('Supprimer ce client ?')){DB.clients=DB.clients.filter(c=>c.id!==id);saveD();renderAll();}}
+
+/* ══════════════════════════════════════════════════
+   PIPELINE
+══════════════════════════════════════════════════ */
+const STAGES=['contacté','répondu','démo','closing'];
+const STAGE_COLORS={contacté:'var(--muted2)',répondu:'var(--cyan)',démo:'var(--yellow)',closing:'var(--green)'};
+
+document.getElementById('btn-add-prospect').onclick=()=>{
+  ['p-name','p-contact','p-email','p-sector','p-budget','p-next','p-notes'].forEach(i=>document.getElementById(i).value='');
+  openModal('modal-prospect');
+};
+document.getElementById('btn-save-prospect').onclick=()=>{
+  const obj={id:uid(),name:v('p-name'),contact:v('p-contact'),email:v('p-email'),sector:v('p-sector'),budget:v('p-budget'),stage:v('p-stage'),channel:v('p-channel'),next:v('p-next'),notes:v('p-notes')};
+  if(!obj.name){alert('Nom requis');return;}
+  DB.prospects.push(obj);saveD();renderAll();closeModal('modal-prospect');
+};
+
+function renderPipeline(){
+  const board=document.getElementById('kanban-board');
+  board.innerHTML=STAGES.map(stage=>{
+    const cards=DB.prospects.filter(p=>p.stage===stage);
+    return`<div class="kol">
+      <div class="kol-hdr" style="color:${STAGE_COLORS[stage]}">${stage.toUpperCase()}<span class="kol-count">${cards.length}</span></div>
+      ${cards.length?cards.map(p=>`
+        <div class="kcard" onclick="moveProspect('${p.id}')">
+          <div class="kcard-name">${p.name}</div>
+          <div class="kcard-meta">${p.sector||''} ${p.budget?'• '+fmt(p.budget):''}</div>
+          ${p.channel?`<div style="margin-top:5px"><span class="badge badge-purple" style="font-size:9px;">${p.channel}</span></div>`:''}
+          ${p.next?`<div style="font-size:10px;color:var(--muted);margin-top:4px;">RDV ${fmtDate(p.next)}</div>`:''}
+          <div style="display:flex;gap:4px;margin-top:7px;">
+            <button class="btn-sec" style="font-size:10px;padding:3px 7px;" onclick="event.stopPropagation();promoteProspect('${p.id}')">→</button>
+            <button class="btn-danger" style="font-size:10px;padding:3px 7px;" onclick="event.stopPropagation();delProspect('${p.id}')">✕</button>
+          </div>
+        </div>`).join(''):`<div style="color:var(--muted);font-size:11px;text-align:center;padding:16px;">Vide</div>`}
+    </div>`;
+  }).join('');
+}
+
+function promoteProspect(id){
+  const p=DB.prospects.find(x=>x.id===id);if(!p)return;
+  const i=STAGES.indexOf(p.stage);
+  if(i<STAGES.length-1)p.stage=STAGES[i+1];
+  saveD();renderAll();
+}
+function delProspect(id){DB.prospects=DB.prospects.filter(p=>p.id!==id);saveD();renderAll();}
+function moveProspect(){}
+
+/* ══════════════════════════════════════════════════
+   FINANCE
+══════════════════════════════════════════════════ */
+document.getElementById('btn-add-tx').onclick=()=>{
+  ['tx-amount','tx-desc'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('tx-date').value=new Date().toISOString().slice(0,10);
+  openModal('modal-tx');
+};
+document.getElementById('btn-save-tx').onclick=()=>{
+  const obj={id:uid(),type:v('tx-type'),amount:v('tx-amount'),cat:v('tx-cat'),date:v('tx-date'),desc:v('tx-desc')};
+  if(!obj.amount){alert('Montant requis');return;}
+  DB.transactions.push(obj);saveD();renderAll();closeModal('modal-tx');
+};
+
+document.getElementById('btn-add-invoice').onclick=()=>{
+  ['inv-client','inv-amount','inv-num','inv-date','inv-due'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('inv-date').value=new Date().toISOString().slice(0,10);
+  openModal('modal-invoice');
+};
+document.getElementById('btn-save-invoice').onclick=()=>{
+  const obj={id:uid(),client:v('inv-client'),amount:v('inv-amount'),date:v('inv-date'),due:v('inv-due'),status:v('inv-status'),num:v('inv-num')};
+  if(!obj.client||!obj.amount){alert('Client et montant requis');return;}
+  DB.invoices.push(obj);saveD();renderAll();closeModal('modal-invoice');
+};
+
+function renderFinance(){
+  const rev=DB.transactions.filter(t=>t.type==='revenu').reduce((s,t)=>s+(+t.amount||0),0);
+  const exp=DB.transactions.filter(t=>t.type==='dépense').reduce((s,t)=>s+(+t.amount||0),0);
+  const mrr=DB.clients.filter(c=>c.status==='actif').reduce((s,c)=>s+(+c.retainer||0),0);
+  const pending=DB.invoices.filter(i=>i.status==='en attente').reduce((s,i)=>s+(+i.amount||0),0);
+
+  document.getElementById('fin-stats').innerHTML=`
+    ${statCard('▲','Revenus totaux',`<span style="color:var(--green)">${fmt(rev)}</span>`,'Encaissés','var(--green)')}
+    ${statCard('▼','Dépenses totales',`<span style="color:var(--red)">${fmt(exp)}</span>`,'Décaissées','var(--red)')}
+    ${statCard('◈','Bénéfice net',`<span style="color:${rev-exp>=0?'var(--green)':'var(--red)'}">` + fmt(rev-exp) + `</span>`,'Revenus - Dépenses',rev-exp>=0?'var(--green)':'var(--red)')}
+    ${statCard('◇','Factures en attente',`<span style="color:var(--yellow)">${fmt(pending)}</span>`,'À encaisser','var(--yellow)')}
+  `;
+
+  // transactions
+  const tl=document.getElementById('tx-list');
+  const sorted=[...DB.transactions].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  tl.innerHTML=sorted.length?sorted.slice(0,8).map(t=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-size:12.5px;">${t.desc||t.cat}</div>
+        <div style="font-size:10.5px;color:var(--muted)">${fmtDate(t.date)} • ${t.cat}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-family:'Syne',sans-serif;font-weight:700;color:${t.type==='revenu'?'var(--green)':'var(--red)'}">${t.type==='revenu'?'+':'−'}${fmt(t.amount)}</span>
+        <button class="btn-danger" style="padding:3px 7px;font-size:10px;" onclick="delTx('${t.id}')">✕</button>
+      </div>
+    </div>`).join(''):'<div class="empty"><div class="ei">◇</div><p>Aucune transaction</p></div>';
+
+  // invoices
+  const il=document.getElementById('invoice-list');
+  il.innerHTML=DB.invoices.length?DB.invoices.map(i=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-size:12.5px;">${i.client} ${i.num?'<span style="font-size:10px;color:var(--muted)">'+i.num+'</span>':''}</div>
+        <div style="font-size:10.5px;color:var(--muted)">Émise ${fmtDate(i.date)} • Éch. ${fmtDate(i.due)}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;">
+        <span style="font-family:'Syne',sans-serif;font-weight:700;">${fmt(i.amount)}</span>
+        ${invBadge(i.status)}
+        <button class="btn-sec" style="font-size:10px;padding:3px 7px;" onclick="toggleInvoice('${i.id}')">✓</button>
+        <button class="btn-danger" style="font-size:10px;padding:3px 7px;" onclick="delInvoice('${i.id}')">✕</button>
+      </div>
+    </div>`).join(''):'<div style="color:var(--muted);font-size:12px;padding:16px;text-align:center;">Aucune facture</div>';
+}
+
+function invBadge(s){const m={payée:'green','en attente':'yellow','en retard':'red'};return`<span class="badge badge-${m[s]||'blue'}" style="font-size:9.5px;">${s}</span>`;}
+function delTx(id){DB.transactions=DB.transactions.filter(t=>t.id!==id);saveD();renderAll();}
+function delInvoice(id){DB.invoices=DB.invoices.filter(i=>i.id!==id);saveD();renderAll();}
+function toggleInvoice(id){const i=DB.invoices.find(x=>x.id===id);if(i)i.status=i.status==='payée'?'en attente':'payée';saveD();renderAll();}
+
+/* ══════════════════════════════════════════════════
+   BUDGET PUB
+══════════════════════════════════════════════════ */
+function renderBudget(){
+  const el=document.getElementById('budget-list');
+  const active=DB.clients.filter(c=>c.adbudget>0);
+  if(!active.length){el.innerHTML='<div class="empty"><div class="ei">◉</div><p>Ajoutez des clients avec un budget pub</p></div>';return;}
+  el.innerHTML=active.map(c=>{
+    const spent=+c.adSpent||0;
+    const budget=+c.adbudget||1;
+    const pct=Math.min(100,Math.round(spent/budget*100));
+    const color=pct>=90?'var(--red)':pct>=70?'var(--yellow)':'var(--green)';
+    return`<div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div>
+          <div style="font-weight:600;font-size:14px;">${c.name}</div>
+          <div style="font-size:11px;color:var(--muted)">${c.sector||''}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:${color}">${pct}%</div>
+          <div style="font-size:10.5px;color:var(--muted)">${fmt(spent)} / ${fmt(budget)}</div>
+        </div>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${color};box-shadow:0 0 8px ${color}60;"></div></div>
+      <div style="display:flex;gap:8px;margin-top:12px;align-items:center;">
+        <span style="font-size:11px;color:var(--muted)">Dépensé :</span>
+        <input type="number" value="${spent}" onchange="updateAdSpent('${c.id}',this.value)"
+          style="width:110px;padding:5px 9px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;font-size:12px;color:var(--text);outline:none;"/>
+        ${pct>=80?`<span class="badge badge-${pct>=90?'red':'yellow'}" style="font-size:10px;">${pct>=90?'⚠ Budget épuisé':'↑ 80% atteint'}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+function updateAdSpent(id,val){const c=DB.clients.find(x=>x.id===id);if(c){c.adSpent=+val;saveD();renderBudget();}}
+
+/* ══════════════════════════════════════════════════
+   PATRIMOINE
+══════════════════════════════════════════════════ */
+document.getElementById('btn-add-goal').onclick=()=>{
+  ['g-name','g-target','g-current','g-date','g-icon'].forEach(i=>document.getElementById(i).value='');
+  openModal('modal-goal');
+};
+document.getElementById('btn-save-goal').onclick=()=>{
+  const obj={id:uid(),name:v('g-name'),target:v('g-target'),current:v('g-current'),date:v('g-date'),icon:v('g-icon')||'🎯',cat:v('g-cat')};
+  if(!obj.name||!obj.target){alert('Nom et montant cible requis');return;}
+  DB.goals.push(obj);saveD();renderAll();closeModal('modal-goal');
+};
+
+function renderPatrimoine(){
+  const rev=DB.transactions.filter(t=>t.type==='revenu').reduce((s,t)=>s+(+t.amount||0),0);
+  const exp=DB.transactions.filter(t=>t.type==='dépense').reduce((s,t)=>s+(+t.amount||0),0);
+  const net=rev-exp;
+  document.getElementById('pat-stats').innerHTML=`
+    ${statCard('▲','Revenus cumulés',`<span style="color:var(--green)">${fmt(rev)}</span>`,'Total encaissé','var(--green)')}
+    ${statCard('▼','Charges cumulées',`<span style="color:var(--red)">${fmt(exp)}</span>`,'Total décaissé','var(--red)')}
+    ${statCard('◈','Bénéfice net',`<span style="color:${net>=0?'var(--green)':'var(--red)'}">` + fmt(net) + `</span>`,'Disponible','var(--neon)')}
+    ${statCard('◉','Objectifs',`<span style="color:var(--yellow)">${DB.goals.length}</span>`,'En cours','var(--yellow)')}
+  `;
+
+  const gl=document.getElementById('goals-list');
+  if(!DB.goals.length){gl.innerHTML='<div class="empty"><div class="ei">◉</div><p>Aucun objectif défini</p></div>';return;}
+  gl.innerHTML=DB.goals.map(g=>{
+    const pct=Math.min(100,Math.round((+g.current||0)/(+g.target||1)*100));
+    const colors=['var(--neon)','var(--green)','var(--cyan)','var(--yellow)','var(--pink)','var(--orange)'];
+    const color=colors[DB.goals.indexOf(g)%colors.length];
+    return`<div style="display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid var(--border);">
+      <div style="font-size:28px;width:36px;text-align:center;">${g.icon}</div>
+      <div style="flex:1;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-weight:500;font-size:13.5px;">${g.name}</span>
+          <span style="font-family:'Syne',sans-serif;font-weight:700;color:${color}">${pct}%</span>
+        </div>
+        <div class="prog-bar" style="height:6px;"><div class="prog-fill" style="width:${pct}%;background:${color};box-shadow:0 0 8px ${color}50;"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:5px;font-size:10.5px;color:var(--muted);">
+          <span>${fmt(g.current)} / ${fmt(g.target)}</span>
+          ${g.date?`<span>Objectif : ${fmtDate(g.date)}</span>`:''}
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
+          <input type="number" value="${g.current}" placeholder="Montant actuel"
+            onchange="updateGoal('${g.id}',this.value)"
+            style="width:130px;padding:5px 9px;background:var(--surface2);border:1px solid var(--border2);border-radius:7px;font-size:12px;color:var(--text);outline:none;"/>
+          <button class="btn-danger" style="font-size:10px;padding:4px 8px;" onclick="delGoal('${g.id}')">Supprimer</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function updateGoal(id,val){const g=DB.goals.find(x=>x.id===id);if(g){g.current=+val;saveD();renderPatrimoine();}}
+function delGoal(id){DB.goals=DB.goals.filter(g=>g.id!==id);saveD();renderAll();}
+
+/* ══════════════════════════════════════════════════
+   LIVRABLES
+══════════════════════════════════════════════════ */
+document.getElementById('btn-add-task').onclick=()=>{
+  ['t-title','t-client','t-deadline','t-assign'].forEach(i=>document.getElementById(i).value='');
+  openModal('modal-task');
+};
+document.getElementById('btn-save-task').onclick=()=>{
+  const obj={id:uid(),title:v('t-title'),client:v('t-client'),priority:v('t-priority'),status:v('t-status'),deadline:v('t-deadline'),assign:v('t-assign')};
+  if(!obj.title){alert('Titre requis');return;}
+  DB.tasks.push(obj);saveD();renderAll();closeModal('modal-task');
+};
+
+function renderLivrables(){
+  const el=document.getElementById('tasks-list');
+  if(!DB.tasks.length){el.innerHTML='<div class="empty"><div class="ei">✦</div><p>Aucune tâche — ajoutez votre première mission</p></div>';return;}
+  const sorted=[...DB.tasks].sort((a,b)=>{const po={haute:0,normale:1,basse:2};return po[a.priority]-po[b.priority];});
+  el.innerHTML=sorted.map(t=>`
+    <div class="card" style="padding:12px 16px;border-left:3px solid ${priorityColor(t.priority)};">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <input type="checkbox" ${t.status==='validé'?'checked':''} onchange="toggleTask('${t.id}')" style="width:16px;height:16px;accent-color:var(--neon);cursor:pointer;"/>
+          <div>
+            <div style="font-size:13px;font-weight:500;${t.status==='validé'?'text-decoration:line-through;color:var(--muted);':''}">${t.title}</div>
+            <div style="font-size:10.5px;color:var(--muted);margin-top:2px;">${t.client||'—'} ${t.assign?'• '+t.assign:''} ${t.deadline?'• '+fmtDate(t.deadline):''}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${priorityBadge(t.priority)}
+          ${statusBadge(t.status)}
+          <button class="btn-danger" style="font-size:10px;padding:3px 7px;" onclick="delTask('${t.id}')">✕</button>
+        </div>
+      </div>
+    </div>`).join('');
+  document.getElementById('badge-tasks').textContent=DB.tasks.filter(t=>t.priority==='haute'&&t.status!=='validé').length||'';
+}
+
+function priorityColor(p){return{haute:'var(--red)',normale:'var(--yellow)',basse:'var(--muted)'}[p]||'var(--muted)';}
+function priorityBadge(p){const m={haute:'red',normale:'yellow',basse:''};return`<span class="badge badge-${m[p]||'blue'}" style="font-size:9.5px;">${p}</span>`;}
+function statusBadge(s){const m={'à faire':'blue','en cours':'yellow','livré':'purple','validé':'green'};return`<span class="badge badge-${m[s]||'blue'}" style="font-size:9.5px;">${s}</span>`;}
+function toggleTask(id){const t=DB.tasks.find(x=>x.id===id);if(t)t.status=t.status==='validé'?'à faire':'validé';saveD();renderAll();}
+function delTask(id){DB.tasks=DB.tasks.filter(t=>t.id!==id);saveD();renderAll();}
+
+/* ══════════════════════════════════════════════════
+   ÉQUIPE
+══════════════════════════════════════════════════ */
+document.getElementById('btn-add-member').onclick=()=>{
+  ['m-name','m-spec','m-rate','m-email','m-eval','m-missions'].forEach(i=>document.getElementById(i).value='');
+  openModal('modal-member');
+};
+document.getElementById('btn-save-member').onclick=()=>{
+  const obj={id:uid(),name:v('m-name'),spec:v('m-spec'),rate:v('m-rate'),email:v('m-email'),eval:v('m-eval'),missions:v('m-missions')};
+  if(!obj.name){alert('Nom requis');return;}
+  DB.team.push(obj);saveD();renderAll();closeModal('modal-member');
+};
+function renderTeam(){
+  const tb=document.getElementById('team-tbody');
+  if(!DB.team.length){tb.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="ei">◐</div><p>Aucun prestataire</p></div></td></tr>`;return;}
+  tb.innerHTML=DB.team.map(m=>`<tr>
+    <td><div style="font-weight:500;">${m.name}</div><div style="font-size:10px;color:var(--muted)">${m.email||''}</div></td>
+    <td>${m.spec||'—'}</td>
+    <td style="font-family:'Syne',sans-serif;font-weight:700;">${m.rate?fmt(m.rate)+'/j':'—'}</td>
+    <td style="font-size:11.5px;color:var(--muted2)">${m.missions||'—'}</td>
+    <td style="color:var(--yellow);font-size:13px;">${stars(m.eval)}</td>
+    <td><button class="btn-danger" style="padding:4px 9px;font-size:11px;" onclick="delMember('${m.id}')">✕</button></td>
+  </tr>`).join('');
+}
+function delMember(id){DB.team=DB.team.filter(m=>m.id!==id);saveD();renderAll();}
+
+/* ══════════════════════════════════════════════════
+   OUTILS
+══════════════════════════════════════════════════ */
+document.getElementById('btn-add-tool').onclick=()=>{
+  ['o-name','o-cost','o-renew','o-link'].forEach(i=>document.getElementById(i).value='');
+  openModal('modal-tool');
+};
+document.getElementById('btn-save-tool').onclick=()=>{
+  const obj={id:uid(),name:v('o-name'),cat:v('o-cat'),cost:v('o-cost'),renew:v('o-renew'),status:v('o-status'),link:v('o-link')};
+  if(!obj.name){alert('Nom requis');return;}
+  DB.tools.push(obj);saveD();renderAll();closeModal('modal-tool');
+};
+function renderTools(){
+  const active=DB.tools.filter(t=>t.status==='actif');
+  const total=active.reduce((s,t)=>s+(+t.cost||0),0);
+  document.getElementById('tools-stats').innerHTML=`
+    ${statCard('⚙','Outils actifs',`<span style="color:var(--cyan)">${active.length}</span>`,'Abonnements actifs','var(--cyan)')}
+    ${statCard('◇','Coût mensuel',`<span style="color:var(--orange)">${fmt(total)}</span>`,'Charges fixes SaaS','var(--orange)')}
+    ${statCard('◇','Coût annuel',`<span style="color:var(--orange)">${fmt(total*12)}</span>`,'Projection annuelle','var(--muted2)')}
+  `;
+  const tb=document.getElementById('tools-tbody');
+  if(!DB.tools.length){tb.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="ei">⚙</div><p>Aucun outil</p></div></td></tr>`;return;}
+  tb.innerHTML=DB.tools.map(t=>`<tr>
+    <td><div style="font-weight:500;">${t.name}</div>${t.link?`<a href="${t.link}" target="_blank" style="font-size:10px;color:var(--neon)">↗ Ouvrir</a>`:''}</td>
+    <td><span class="badge badge-blue" style="font-size:9.5px;">${t.cat}</span></td>
+    <td style="font-family:'Syne',sans-serif;font-weight:700;color:var(--orange)">${fmt(t.cost)}</td>
+    <td style="color:var(--muted);font-size:11.5px;">${fmtDate(t.renew)}</td>
+    <td>${toolStatusBadge(t.status)}</td>
+    <td><button class="btn-danger" style="padding:4px 9px;font-size:11px;" onclick="delTool('${t.id}')">✕</button></td>
+  </tr>`).join('');
+}
+function toolStatusBadge(s){const m={actif:'green',pause:'yellow',annulé:'red'};return`<span class="badge badge-${m[s]||'blue'}" style="font-size:9.5px;">${s}</span>`;}
+function delTool(id){DB.tools=DB.tools.filter(t=>t.id!==id);saveD();renderAll();}
+
+/* ══════════════════════════════════════════════════
+   CONTRATS — ZONE SÉCURISÉE
+══════════════════════════════════════════════════ */
+let contractsUnlocked=false;
+
+function resetLock(){
+  if(!contractsUnlocked){
+    document.getElementById('lock-overlay').style.display='flex';
+    document.getElementById('contracts-content').style.display='none';
+    document.getElementById('btn-add-contract').style.display='none';
+    document.getElementById('lock-inp').value='';
+    document.getElementById('lock-err').textContent='';
+  }
+}
+
+document.getElementById('lock-btn').onclick=()=>{
+  const val=document.getElementById('lock-inp').value;
+  const users=getUsers();
+  const u=users[CU];
+  if(!u){document.getElementById('lock-err').textContent='Erreur utilisateur.';return;}
+  // password is everything before "CONTRAT"
+  if(!val.endsWith('CONTRAT')){document.getElementById('lock-err').textContent='Format invalide. Termine par CONTRAT.';return;}
+  const enteredPwd=val.slice(0,-7); // remove "CONTRAT"
+  if(hash(enteredPwd)!==u.hash){document.getElementById('lock-err').textContent='Mot de passe incorrect.';return;}
+  contractsUnlocked=true;
+  document.getElementById('lock-overlay').style.display='none';
+  document.getElementById('contracts-content').style.display='block';
+  document.getElementById('btn-add-contract').style.display='inline-flex';
+  renderContracts();
+};
+document.getElementById('lock-inp').onkeydown=e=>{if(e.key==='Enter')document.getElementById('lock-btn').click();};
+
+document.getElementById('btn-add-contract').onclick=()=>{
+  ['ct-client','ct-date','ct-value','ct-notes'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('ct-file').value='';
+  openModal('modal-contract');
+};
+
+document.getElementById('btn-save-contract').onclick=()=>{
+  const fileInput=document.getElementById('ct-file');
+  const file=fileInput.files[0];
+  const obj={id:uid(),client:v('ct-client'),type:v('ct-type'),date:v('ct-date'),value:v('ct-value'),notes:v('ct-notes'),fileName:file?file.name:null,fileData:null};
+  if(!obj.client){alert('Client requis');return;}
+
+  const save=()=>{DB.contracts.push(obj);saveD();renderContracts();closeModal('modal-contract');};
+
+  if(file){
+    const reader=new FileReader();
+    reader.onload=e=>{obj.fileData=e.target.result;save();};
+    reader.readAsDataURL(file);
+  } else {save();}
+};
+
+function renderContracts(){
+  const el=document.getElementById('contracts-list');
+  if(!DB.contracts.length){el.innerHTML='<div class="empty"><div class="ei">📄</div><p>Aucun contrat enregistré</p></div>';return;}
+  el.innerHTML=DB.contracts.map(c=>`
+    <div class="card" style="padding:14px 18px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="font-size:28px;">📄</div>
+          <div>
+            <div style="font-weight:600;font-size:14px;">${c.client}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">${c.type} ${c.value?'• '+fmt(c.value):''} ${c.date?'• Signé '+fmtDate(c.date):''}</div>
+            ${c.notes?`<div style="font-size:11px;color:var(--muted2);margin-top:4px;">${c.notes}</div>`:''}
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0;">
+          ${c.fileData?`<button class="btn-sec" style="font-size:11px;padding:5px 10px;" onclick="downloadContract('${c.id}')">↓ PDF</button>`:'<span style="font-size:11px;color:var(--muted);padding:5px 0;">Pas de fichier</span>'}
+          <button class="btn-danger" style="font-size:11px;padding:5px 10px;" onclick="delContract('${c.id}')">✕</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function downloadContract(id){
+  const c=DB.contracts.find(x=>x.id===id);
+  if(!c||!c.fileData)return;
+  const a=document.createElement('a');
+  a.href=c.fileData;
+  a.download=c.fileName||'contrat.pdf';
+  a.click();
+}
+function delContract(id){if(confirm('Supprimer ce contrat ?')){DB.contracts=DB.contracts.filter(c=>c.id!==id);saveD();renderContracts();}}
+
+/* ══════════════════════════════════════════════════
+   BADGES & UTILS
+══════════════════════════════════════════════════ */
+function updateBadges(){
+  document.getElementById('badge-clients').textContent=DB.clients.filter(c=>c.status==='actif').length;
+  const urgent=DB.tasks.filter(t=>t.priority==='haute'&&t.status!=='validé').length;
+  const badge=document.getElementById('badge-tasks');
+  badge.textContent=urgent||'';
+  badge.style.display=urgent?'inline':'none';
+}
+
+function v(id){const el=document.getElementById(id);return el?el.value:'';}
+</script>
+</body>
+</html>
