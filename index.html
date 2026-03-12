@@ -360,18 +360,54 @@ tr:hover td{background:#ffffff03;}
     <div class="page" id="page-pipeline">
       <div class="sec-hdr">
         <div><h2>Pipeline de prospection</h2><p>Suivi des prospects de la prise de contact au closing</p></div>
-        <button class="btn-primary" id="btn-add-prospect">+ Nouveau prospect</button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-sec" id="btn-add-rdv">📅 + RDV</button>
+          <button class="btn-primary" id="btn-add-prospect">+ Prospect</button>
+        </div>
       </div>
-      <div class="kanban" id="kanban-board"></div>
+      <div class="kanban" id="kanban-board" style="margin-bottom:24px;"></div>
+      <!-- AGENDA -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div class="card-title" style="margin-bottom:0;">📅 Agenda RDV</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="btn-sec" style="font-size:11px;padding:5px 10px;" onclick="agendaPrev()">‹</button>
+            <span id="agenda-month-label" style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;min-width:140px;text-align:center;"></span>
+            <button class="btn-sec" style="font-size:11px;padding:5px 10px;" onclick="agendaNext()">›</button>
+          </div>
+        </div>
+        <div id="agenda-cal" style="margin-bottom:16px;"></div>
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">RDV ce mois</div>
+          <div id="agenda-rdv-list"></div>
+        </div>
+      </div>
     </div>
 
     <!-- ════ FINANCE ════ -->
     <div class="page" id="page-finance">
       <div class="sec-hdr">
-        <div><h2>Trésorerie</h2><p>Revenus, dépenses et projection</p></div>
+        <div><h2>Trésorerie</h2><p>Revenus, dépenses et transactions</p></div>
         <button class="btn-primary" id="btn-add-tx">+ Transaction</button>
       </div>
       <div class="stats-grid" id="fin-stats"></div>
+      <!-- CHART -->
+      <div class="card" style="margin-bottom:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div class="card-title" style="margin-bottom:0;">Évolution financière</div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn-sec" style="font-size:10px;padding:4px 10px;" onclick="setChartMode('bar')" id="chart-btn-bar">Barres</button>
+            <button class="btn-sec" style="font-size:10px;padding:4px 10px;" onclick="setChartMode('candle')" id="chart-btn-candle">Bougies</button>
+            <button class="btn-sec" style="font-size:10px;padding:4px 10px;" onclick="setChartMode('line')" id="chart-btn-line">Courbe</button>
+          </div>
+        </div>
+        <canvas id="fin-chart" height="220" style="width:100%;"></canvas>
+        <div style="display:flex;gap:16px;margin-top:10px;font-size:10.5px;color:var(--muted);">
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--green);display:inline-block;"></span>Revenus</span>
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--red);display:inline-block;"></span>Dépenses</span>
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:var(--neon);display:inline-block;"></span>Solde net</span>
+        </div>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <div class="card">
           <div class="card-title">Transactions récentes</div>
@@ -727,6 +763,54 @@ tr:hover td{background:#ffffff03;}
   </div>
 </div>
 
+<!-- RDV modal -->
+<div class="modal-bg" id="modal-rdv">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-rdv')">✕</button>
+    <div class="modal-title" id="modal-rdv-title">Nouveau RDV</div>
+    <div class="form-grid">
+      <div class="fg"><label>Titre / Objet</label><input id="rdv-title" placeholder="Démo produit"/></div>
+      <div class="fg"><label>Avec (prospect/client)</label><input id="rdv-with" placeholder="Startup XYZ"/></div>
+      <div class="fg"><label>Type</label>
+        <select id="rdv-type">
+          <option value="demo">🎯 Démo</option>
+          <option value="closing">💰 Closing</option>
+          <option value="suivi">🔁 Suivi client</option>
+          <option value="prospection">📞 Prospection</option>
+          <option value="onboarding">🚀 Onboarding</option>
+          <option value="autre">📌 Autre</option>
+        </select>
+      </div>
+      <div class="fg"><label>Date</label><input id="rdv-date" type="date"/></div>
+      <div class="fg"><label>Heure</label><input id="rdv-time" type="time" value="10:00"/></div>
+      <div class="fg"><label>Durée</label>
+        <select id="rdv-duration">
+          <option value="15">15 min</option>
+          <option value="30">30 min</option>
+          <option value="45">45 min</option>
+          <option value="60" selected>1h</option>
+          <option value="90">1h30</option>
+          <option value="120">2h</option>
+        </select>
+      </div>
+      <div class="fg"><label>Canal</label>
+        <select id="rdv-channel">
+          <option value="Visio">Visio (Zoom/Meet)</option>
+          <option value="Téléphone">Téléphone</option>
+          <option value="Présentiel">Présentiel</option>
+        </select>
+      </div>
+      <div class="fg"><label>Lien / Lieu</label><input id="rdv-link" placeholder="https://meet.google.com/..."/></div>
+    </div>
+    <div class="form-grid cols1" style="margin-top:12px;">
+      <div class="fg"><label>Notes</label><textarea id="rdv-notes" placeholder="Points à aborder, contexte..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sec" onclick="closeModal('modal-rdv')">Annuler</button>
+      <button class="btn-primary" id="btn-save-rdv">Enregistrer</button>
+    </div>
+  </div>
+</div>
 <script>
 /* ══════════════════════════════════════════════════
    STORAGE
@@ -766,7 +850,7 @@ function loadD(u){try{return JSON.parse(lsGet(dk(u)))||initData();}catch{return 
 function saveD(){lsSet(dk(CU),JSON.stringify(DB));}
 
 function initData(){
-  return{clients:[],prospects:[],transactions:[],invoices:[],tasks:[],team:[],tools:[],goals:[],contracts:[],patrimoine:{cumRevenue:0,cumExpense:0,savings:0}};
+  return{clients:[],prospects:[],transactions:[],invoices:[],tasks:[],team:[],tools:[],goals:[],contracts:[],rdvs:[],patrimoine:{cumRevenue:0,cumExpense:0,savings:0}};
 }
 
 let DB={};
@@ -865,6 +949,7 @@ function renderAll(){
   renderTools();
   renderContracts();
   updateBadges();
+  setTimeout(()=>{drawFinChart();renderAgenda();setChartMode('candle');},80);
 }
 
 /* ══════════════════════════════════════════════════
@@ -878,12 +963,11 @@ function renderDashboard(){
   const openProspects=DB.prospects.filter(p=>p.stage!=='closing').length;
   const urgentTasks=DB.tasks.filter(t=>t.priority==='haute'&&t.status!=='validé');
 
-  document.getElementById('dash-stats').innerHTML=`
-    ${statCard('◎','MRR','<span style="color:var(--green)">${fmt(mrr)}</span>',active.length+' client'+(active.length>1?'s':''),'var(--green)')}
-    ${statCard('◇','Factures en attente','<span style="color:var(--yellow)">${fmt(pendingAmt)}</span>',pending.length+' facture'+(pending.length>1?'s':''),'var(--yellow)')}
-    ${statCard('▦','Prospects actifs','<span style="color:var(--cyan)">${openProspects}</span>','Dans le pipeline','var(--cyan)')}
-    ${statCard('✦','Tâches urgentes','<span style="color:var(--red)">${urgentTasks.length}</span>','Priorité haute','var(--red)')}
-  `;
+  document.getElementById('dash-stats').innerHTML=
+    statCard('◎','MRR','<span style="color:var(--green)">'+fmt(mrr)+'</span>',active.length+' client'+(active.length>1?'s':''),'var(--green)')+
+    statCard('◇','Factures en attente','<span style="color:var(--yellow)">'+fmt(pendingAmt)+'</span>',pending.length+' facture'+(pending.length>1?'s':''),'var(--yellow)')+
+    statCard('▦','Prospects actifs','<span style="color:var(--cyan)">'+openProspects+'</span>','Dans le pipeline','var(--cyan)')+
+    statCard('✦','Tâches urgentes','<span style="color:var(--red)">'+urgentTasks.length+'</span>','Priorité haute','var(--red)');
 
   // clients list
   const cl=document.getElementById('dash-clients-list');
@@ -1005,6 +1089,22 @@ function delClient(id){if(confirm('Supprimer ce client ?')){DB.clients=DB.client
 const STAGES=['contacté','répondu','démo','closing'];
 const STAGE_COLORS={contacté:'var(--muted2)',répondu:'var(--cyan)',démo:'var(--yellow)',closing:'var(--green)'};
 
+document.getElementById('btn-add-rdv').onclick=()=>{
+  ['rdv-title','rdv-with','rdv-link','rdv-notes'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('rdv-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('rdv-time').value='10:00';
+  document.getElementById('btn-save-rdv').dataset.editId='';
+  document.getElementById('modal-rdv-title').textContent='Nouveau RDV';
+  openModal('modal-rdv');
+};
+document.getElementById('btn-save-rdv').onclick=()=>{
+  const id=document.getElementById('btn-save-rdv').dataset.editId;
+  const obj={id:id||uid(),title:v('rdv-title'),with:v('rdv-with'),type:v('rdv-type'),date:v('rdv-date'),time:v('rdv-time'),duration:v('rdv-duration'),channel:v('rdv-channel'),link:v('rdv-link'),notes:v('rdv-notes')};
+  if(!obj.title||!obj.date){alert('Titre et date requis');return;}
+  if(id){const i=DB.rdvs.findIndex(r=>r.id===id);if(i>-1)DB.rdvs[i]=obj;}
+  else DB.rdvs.push(obj);
+  saveD();renderAgenda();closeModal('modal-rdv');
+};
 document.getElementById('btn-add-prospect').onclick=()=>{
   ['p-name','p-contact','p-email','p-sector','p-budget','p-next','p-notes'].forEach(i=>document.getElementById(i).value='');
   openModal('modal-prospect');
@@ -1034,6 +1134,7 @@ function renderPipeline(){
         </div>`).join(''):`<div style="color:var(--muted);font-size:11px;text-align:center;padding:16px;">Vide</div>`}
     </div>`;
   }).join('');
+  setTimeout(renderAgenda,50);
 }
 
 function promoteProspect(id){
@@ -1076,12 +1177,12 @@ function renderFinance(){
   const mrr=DB.clients.filter(c=>c.status==='actif').reduce((s,c)=>s+(+c.retainer||0),0);
   const pending=DB.invoices.filter(i=>i.status==='en attente').reduce((s,i)=>s+(+i.amount||0),0);
 
-  document.getElementById('fin-stats').innerHTML=`
-    ${statCard('▲','Revenus totaux',`<span style="color:var(--green)">${fmt(rev)}</span>`,'Encaissés','var(--green)')}
-    ${statCard('▼','Dépenses totales',`<span style="color:var(--red)">${fmt(exp)}</span>`,'Décaissées','var(--red)')}
-    ${statCard('◈','Bénéfice net',`<span style="color:${rev-exp>=0?'var(--green)':'var(--red)'}">` + fmt(rev-exp) + `</span>`,'Revenus - Dépenses',rev-exp>=0?'var(--green)':'var(--red)')}
-    ${statCard('◇','Factures en attente',`<span style="color:var(--yellow)">${fmt(pending)}</span>`,'À encaisser','var(--yellow)')}
-  `;
+  const netFin=rev-exp;
+  document.getElementById('fin-stats').innerHTML=
+    statCard('▲','Revenus encaissés','<span style="color:var(--green)">'+fmt(rev)+'</span>','Total des transactions revenus','var(--green)')+
+    statCard('▼','Dépenses décaissées','<span style="color:var(--red)">'+fmt(exp)+'</span>','Total des transactions dépenses','var(--red)')+
+    statCard('◈','Bénéfice net','<span style="color:'+(netFin>=0?'var(--green)':'var(--red)')+'">'+fmt(netFin)+'</span>','Revenus − Dépenses',netFin>=0?'var(--green)':'var(--red)')+
+    statCard('◇','Factures en attente','<span style="color:var(--yellow)">'+fmt(pending)+'</span>','À encaisser côté clients','var(--yellow)');
 
   // transactions
   const tl=document.getElementById('tx-list');
@@ -1113,6 +1214,7 @@ function renderFinance(){
         <button class="btn-danger" style="font-size:10px;padding:3px 7px;" onclick="delInvoice('${i.id}')">✕</button>
       </div>
     </div>`).join(''):'<div style="color:var(--muted);font-size:12px;padding:16px;text-align:center;">Aucune facture</div>';
+  setTimeout(drawFinChart,50);
 }
 
 function invBadge(s){const m={payée:'green','en attente':'yellow','en retard':'red'};return`<span class="badge badge-${m[s]||'blue'}" style="font-size:9.5px;">${s}</span>`;}
@@ -1172,12 +1274,17 @@ function renderPatrimoine(){
   const rev=DB.transactions.filter(t=>t.type==='revenu').reduce((s,t)=>s+(+t.amount||0),0);
   const exp=DB.transactions.filter(t=>t.type==='dépense').reduce((s,t)=>s+(+t.amount||0),0);
   const net=rev-exp;
-  document.getElementById('pat-stats').innerHTML=`
-    ${statCard('▲','Revenus cumulés',`<span style="color:var(--green)">${fmt(rev)}</span>`,'Total encaissé','var(--green)')}
-    ${statCard('▼','Charges cumulées',`<span style="color:var(--red)">${fmt(exp)}</span>`,'Total décaissé','var(--red)')}
-    ${statCard('◈','Bénéfice net',`<span style="color:${net>=0?'var(--green)':'var(--red)'}">` + fmt(net) + `</span>`,'Disponible','var(--neon)')}
-    ${statCard('◉','Objectifs',`<span style="color:var(--yellow)">${DB.goals.length}</span>`,'En cours','var(--yellow)')}
-  `;
+  const txRev=DB.transactions.filter(t=>t.type==='revenu').reduce((s,t)=>s+(+t.amount||0),0);
+  const txExp=DB.transactions.filter(t=>t.type==='dépense').reduce((s,t)=>s+(+t.amount||0),0);
+  const netPat=txRev-txExp;
+  const goalsTotal=DB.goals.reduce((s,g)=>s+(+g.current||0),0);
+  const goalsDone=DB.goals.filter(g=>+g.current>=(+g.target||Infinity)).length;
+  const txoRte=txRev>0?Math.round(netPat/txRev*100):0;
+  document.getElementById('pat-stats').innerHTML=
+    statCard('💰','Épargne disponible','<span style="color:var(--neon)">'+fmt(netPat)+'</span>','Bénéfice net cumulé (revenus − dépenses)','var(--neon)')+
+    statCard('📈','Taux d\'économie','<span style="color:'+(txoRte>=20?'var(--green)':'var(--yellow)')+'">'+txoRte+'%</span>','Part du revenu non dépensé',txoRte>=20?'var(--green)':'var(--yellow)')+
+    statCard('🎯','Objectifs actifs','<span style="color:var(--cyan)">'+DB.goals.length+'</span>',goalsDone+' atteint'+(goalsDone>1?'s':''),'var(--cyan)')+
+    statCard('💎','Épargne dans objectifs','<span style="color:var(--yellow)">'+fmt(goalsTotal)+'</span>','Total alloué vers tes objectifs','var(--yellow)');
 
   const gl=document.getElementById('goals-list');
   if(!DB.goals.length){gl.innerHTML='<div class="empty"><div class="ei">◉</div><p>Aucun objectif défini</p></div>';return;}
@@ -1410,6 +1517,229 @@ function updateBadges(){
 }
 
 function v(id){const el=document.getElementById(id);return el?el.value:'';}
+
+/* ══════════════════════════════════════════════════
+   FINANCIAL CHART
+══════════════════════════════════════════════════ */
+let chartMode='candle';
+
+function setChartMode(mode){
+  chartMode=mode;
+  ['bar','candle','line'].forEach(m=>{
+    const b=document.getElementById('chart-btn-'+m);
+    if(!b)return;
+    b.style.background=m===mode?'linear-gradient(135deg,#7c3aed30,#2563eb20)':'';
+    b.style.borderColor=m===mode?'#7c3aed60':'';
+    b.style.color=m===mode?'var(--neon)':'var(--muted2)';
+  });
+  drawFinChart();
+}
+
+function getMonthlyData(){
+  const now=new Date();
+  const months=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    months.push({label:d.toLocaleDateString('fr-FR',{month:'short',year:'2-digit'}),year:d.getFullYear(),month:d.getMonth()});
+  }
+  return months.map(m=>{
+    const txs=DB.transactions.filter(t=>{
+      if(!t.date)return false;
+      const td=new Date(t.date);
+      return td.getFullYear()===m.year&&td.getMonth()===m.month;
+    });
+    const rev=txs.filter(t=>t.type==='revenu').reduce((s,t)=>s+(+t.amount||0),0);
+    const exp=txs.filter(t=>t.type==='dépense').reduce((s,t)=>s+(+t.amount||0),0);
+    return{label:m.label,rev,exp,net:rev-exp};
+  });
+}
+
+function drawFinChart(){
+  const canvas=document.getElementById('fin-chart');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const data=getMonthlyData();
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.parentElement.offsetWidth-44;
+  const H=220;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,W,H);
+  const allVals=[...data.map(d=>d.rev),...data.map(d=>d.exp),...data.map(d=>Math.abs(d.net))];
+  const maxVal=Math.max(...allVals,500);
+  const padL=48,padR=10,padT=16,padB=28;
+  const chartW=W-padL-padR;
+  const chartH=H-padT-padB;
+  // grid
+  for(let i=0;i<=4;i++){
+    const y=padT+chartH*(i/4);
+    ctx.strokeStyle='#ffffff08';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();
+    ctx.fillStyle='#ffffff25';ctx.font='9px Inter';ctx.textAlign='right';
+    ctx.fillText(Math.round(maxVal*(1-i/4)).toLocaleString('fr-FR'),padL-4,y+3);
+  }
+  const n=data.length;
+  const slotW=chartW/n;
+
+  if(chartMode==='candle'){
+    data.forEach((d,i)=>{
+      const x=padL+i*slotW+slotW/2;
+      const bW=slotW*0.44;
+      const isUp=d.net>=0;
+      const col=isUp?'#4ade80':'#f87171';
+      const yRev=padT+chartH*(1-d.rev/maxVal);
+      const yExp=padT+chartH*(1-d.exp/maxVal);
+      const yTop=Math.min(yRev,yExp);
+      const yBot=Math.max(yRev,yExp);
+      // wicks
+      ctx.strokeStyle=col+'80';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(x,padT);ctx.lineTo(x,yTop);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x,yBot);ctx.lineTo(x,padT+chartH);ctx.stroke();
+      // body
+      const bH=Math.max(2,yBot-yTop);
+      const grad=ctx.createLinearGradient(0,yTop,0,yBot);
+      grad.addColorStop(0,col+'dd');grad.addColorStop(1,col+'44');
+      ctx.fillStyle=grad;
+      ctx.shadowColor=col;ctx.shadowBlur=8;
+      ctx.beginPath();ctx.roundRect(x-bW/2,yTop,bW,bH,3);ctx.fill();
+      ctx.strokeStyle=col;ctx.lineWidth=1;ctx.stroke();
+      ctx.shadowBlur=0;
+    });
+  } else if(chartMode==='bar'){
+    data.forEach((d,i)=>{
+      const x=padL+i*slotW;
+      const bW=slotW*0.28;
+      const gap=slotW*0.06;
+      [[d.rev,'#4ade80',0],[d.exp,'#f87171',bW+gap]].forEach(([val,col,offset])=>{
+        const h=chartH*(val/maxVal);
+        const grad=ctx.createLinearGradient(0,padT+chartH-h,0,padT+chartH);
+        grad.addColorStop(0,col+'cc');grad.addColorStop(1,col+'22');
+        ctx.fillStyle=grad;
+        ctx.shadowColor=col;ctx.shadowBlur=6;
+        ctx.beginPath();ctx.roundRect(x+gap+offset,padT+chartH-h,bW,h,3);ctx.fill();
+        ctx.strokeStyle=col;ctx.lineWidth=1;ctx.stroke();
+        ctx.shadowBlur=0;
+      });
+    });
+  } else {
+    [{key:'rev',color:'#4ade80'},{key:'exp',color:'#f87171'},{key:'net',color:'#a78bfa'}].forEach(c=>{
+      const pts=data.map((d,i)=>({x:padL+i*slotW+slotW/2,y:padT+chartH*(1-Math.max(0,d[c.key])/maxVal)}));
+      const grad=ctx.createLinearGradient(0,padT,0,padT+chartH);
+      grad.addColorStop(0,c.color+'28');grad.addColorStop(1,c.color+'00');
+      ctx.fillStyle=grad;
+      ctx.beginPath();ctx.moveTo(pts[0].x,padT+chartH);
+      pts.forEach(p=>ctx.lineTo(p.x,p.y));
+      ctx.lineTo(pts[pts.length-1].x,padT+chartH);ctx.closePath();ctx.fill();
+      ctx.strokeStyle=c.color;ctx.lineWidth=2;ctx.shadowColor=c.color;ctx.shadowBlur=6;
+      ctx.beginPath();pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));ctx.stroke();
+      ctx.shadowBlur=0;
+      pts.forEach(p=>{ctx.fillStyle=c.color;ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fill();});
+    });
+  }
+  ctx.fillStyle='#ffffff28';ctx.font='10px Inter';ctx.textAlign='center';
+  data.forEach((d,i)=>{ctx.fillText(d.label,padL+i*slotW+slotW/2,H-padB+14);});
+}
+
+/* ══════════════════════════════════════════════════
+   AGENDA RDV
+══════════════════════════════════════════════════ */
+let agendaDate=new Date();
+const RDV_TYPES={
+  demo:{label:'Démo',color:'#a78bfa',icon:'🎯'},
+  closing:{label:'Closing',color:'#4ade80',icon:'💰'},
+  suivi:{label:'Suivi',color:'#60a5fa',icon:'🔁'},
+  prospection:{label:'Prospection',color:'#fb923c',icon:'📞'},
+  onboarding:{label:'Onboarding',color:'#67e8f9',icon:'🚀'},
+  autre:{label:'Autre',color:'#f472b6',icon:'📌'},
+};
+function agendaPrev(){agendaDate=new Date(agendaDate.getFullYear(),agendaDate.getMonth()-1,1);renderAgenda();}
+function agendaNext(){agendaDate=new Date(agendaDate.getFullYear(),agendaDate.getMonth()+1,1);renderAgenda();}
+
+function renderAgenda(){
+  const lbl=document.getElementById('agenda-month-label');
+  if(!lbl)return;
+  const y=agendaDate.getFullYear(),m=agendaDate.getMonth();
+  lbl.textContent=new Date(y,m,1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'}).replace(/^./,c=>c.toUpperCase());
+  const firstDay=new Date(y,m,1).getDay();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const startOffset=(firstDay+6)%7;
+  const today=new Date();
+  if(!DB.rdvs)DB.rdvs=[];
+  const rdvsThisMonth=DB.rdvs.filter(r=>{
+    if(!r.date)return false;
+    const d=new Date(r.date);
+    return d.getFullYear()===y&&d.getMonth()===m;
+  });
+  const cells=[];
+  for(let i=0;i<startOffset;i++)cells.push(null);
+  for(let d=1;d<=daysInMonth;d++)cells.push(d);
+  while(cells.length%7!==0)cells.push(null);
+  const dayNames=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  let html='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;">';
+  dayNames.forEach(dn=>{html+='<div style="text-align:center;font-size:9.5px;font-weight:700;letter-spacing:.05em;color:var(--muted);padding:4px 0;">'+dn+'</div>';});
+  cells.forEach(d=>{
+    if(!d){html+='<div></div>';return;}
+    const isToday=d===today.getDate()&&m===today.getMonth()&&y===today.getFullYear();
+    const dayRdvs=rdvsThisMonth.filter(r=>new Date(r.date).getDate()===d);
+    const dots=dayRdvs.slice(0,3).map(r=>'<span style="width:5px;height:5px;border-radius:50%;background:'+(RDV_TYPES[r.type]||RDV_TYPES.autre).color+';display:inline-block;margin:0 1px;"></span>').join('');
+    const bg=isToday?'linear-gradient(135deg,#7c3aed30,#2563eb20)':'transparent';
+    const bc=isToday?'#7c3aed60':'transparent';
+    html+='<div onclick="agendaDayClick('+y+','+m+','+d+')" style="padding:5px 3px;border-radius:7px;cursor:pointer;text-align:center;background:'+bg+';border:1px solid '+bc+';transition:background .15s;" onmouseover="this.style.background=\'var(--surface2)\'" onmouseout="this.style.background=\''+bg+'\'">'
+      +'<div style="font-size:12px;font-weight:'+(isToday?700:400)+';color:'+(isToday?'var(--neon)':'var(--text)')+';"> '+d+'</div>'
+      +'<div style="min-height:8px;display:flex;justify-content:center;margin-top:2px;">'+dots+'</div>'
+      +'</div>';
+  });
+  html+='</div>';
+  document.getElementById('agenda-cal').innerHTML=html;
+  const sorted=[...rdvsThisMonth].sort((a,b)=>new Date(a.date+' '+(a.time||'00:00'))-new Date(b.date+' '+(b.time||'00:00')));
+  const listEl=document.getElementById('agenda-rdv-list');
+  if(!sorted.length){listEl.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px 0;">Aucun RDV ce mois</div>';return;}
+  listEl.innerHTML=sorted.map(r=>{
+    const t=RDV_TYPES[r.type]||RDV_TYPES.autre;
+    const d=new Date(r.date);
+    const isPast=d<new Date()&&d.toDateString()!==new Date().toDateString();
+    return'<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:9px;background:var(--surface2);margin-bottom:6px;border:1px solid var(--border2);opacity:'+(isPast?0.55:1)+';">'
+      +'<div style="font-size:22px;width:28px;text-align:center;">'+t.icon+'</div>'
+      +'<div style="flex:1;">'
+        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
+          +'<span style="font-weight:500;font-size:13px;">'+r.title+'</span>'
+          +'<span class="badge" style="background:'+t.color+'20;color:'+t.color+';border:1px solid '+t.color+'40;font-size:9.5px;">'+t.label+'</span>'
+          +(isPast?'<span style="font-size:9.5px;color:var(--muted)">Passé</span>':'')
+        +'</div>'
+        +'<div style="font-size:11px;color:var(--muted);margin-top:3px;">'
+          +(r.with?r.with+' • ':'')+d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'})+(r.time?' à '+r.time:'')+(r.duration?' ('+r.duration+'min)':'')+(r.channel?' • '+r.channel:'')
+        +'</div>'
+        +(r.notes?'<div style="font-size:11px;color:var(--muted2);margin-top:2px;font-style:italic;">'+r.notes+'</div>':'')
+        +(r.link?'<a href="'+r.link+'" target="_blank" style="font-size:10.5px;color:var(--neon);">↗ Rejoindre</a>':'')
+      +'</div>'
+      +'<div style="display:flex;gap:5px;flex-shrink:0;">'
+        +`<button class="btn-sec" style="font-size:10px;padding:4px 8px;" onclick="editRdv('${r.id}')">✎</button>`
+        +`<button class="btn-danger" style="font-size:10px;padding:4px 8px;" onclick="delRdv('${r.id}')">✕</button>`
+      +'</div>'
+    +'</div>';
+  }).join('');
+}
+
+function agendaDayClick(y,m,d){
+  document.getElementById('rdv-date').value=new Date(y,m,d).toISOString().slice(0,10);
+  ['rdv-title','rdv-with','rdv-link','rdv-notes'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('rdv-time').value='10:00';
+  document.getElementById('btn-save-rdv').dataset.editId='';
+  document.getElementById('modal-rdv-title').textContent='Nouveau RDV — '+d+' '+new Date(y,m,1).toLocaleDateString('fr-FR',{month:'long'});
+  openModal('modal-rdv');
+}
+function editRdv(id){
+  const r=DB.rdvs.find(x=>x.id===id);if(!r)return;
+  ['title','with','date','time','link','notes'].forEach(k=>{const el=document.getElementById('rdv-'+k);if(el)el.value=r[k]||'';});
+  document.getElementById('rdv-type').value=r.type||'demo';
+  document.getElementById('rdv-duration').value=r.duration||'60';
+  document.getElementById('rdv-channel').value=r.channel||'Visio';
+  document.getElementById('btn-save-rdv').dataset.editId=id;
+  document.getElementById('modal-rdv-title').textContent='Modifier RDV';
+  openModal('modal-rdv');
+}
+function delRdv(id){if(!confirm('Supprimer ce RDV ?'))return;DB.rdvs=DB.rdvs.filter(r=>r.id!==id);saveD();renderAgenda();}
 </script>
 </body>
 </html>
