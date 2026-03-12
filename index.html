@@ -877,8 +877,6 @@ document.getElementById('lp').onkeydown=e=>{if(e.key==='Enter')doLogin();};
 document.getElementById('lu').onkeydown=e=>{if(e.key==='Enter')document.getElementById('lp').focus();};
 
 // auto session
-const _sess=lsGet(SK);
-if(_sess){const _users=getUsers();if(_users[_sess]){CU=_sess;DB=loadD(CU);document.getElementById('overlay').style.display='none';}}
 
 /* ══════════════════════════════════════════════════
    INIT APP
@@ -889,7 +887,6 @@ function initApp(){
   document.getElementById('sb-logout').onclick=()=>{lsRm(SK);CU=null;DB={};document.getElementById('overlay').style.display='flex';};
   renderAll();
 }
-if(CU)initApp();
 
 /* ══════════════════════════════════════════════════
    NAVIGATION
@@ -909,12 +906,17 @@ const PAGES={
 };
 
 document.querySelectorAll('.nav-item').forEach(item=>{
-  item.addEventListener('click',()=>{
-    const p=item.dataset.page;
+  item.addEventListener('click',(e)=>{
+    const nav=e.target.closest('.nav-item');
+    if(!nav) return;
+    const p=nav.dataset.page;
+    if(!p) return;
     document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
-    item.classList.add('active');
+    nav.classList.add('active');
     document.querySelectorAll('.page').forEach(pg=>pg.classList.remove('active'));
-    document.getElementById('page-'+p).classList.add('active');
+    const pg=document.getElementById('page-'+p);
+    if(!pg) return;
+    pg.classList.add('active');
     document.getElementById('tb-title').textContent=PAGES[p]?.title||p;
     document.getElementById('tb-sub').textContent=PAGES[p]?.sub||'';
     if(p==='contrats') resetLock();
@@ -937,6 +939,17 @@ function isOverdue(d){return d&&new Date(d)<new Date();}
 /* ══════════════════════════════════════════════════
    RENDER ALL
 ══════════════════════════════════════════════════ */
+const STAGES=['contacté','répondu','démo','closing'];
+const STAGE_COLORS={contacté:'var(--muted2)',répondu:'var(--cyan)',démo:'var(--yellow)',closing:'var(--green)'};
+const RDV_TYPES={
+  demo:{label:'Démo',color:'#a78bfa',icon:'🎯'},
+  closing:{label:'Closing',color:'#4ade80',icon:'💰'},
+  suivi:{label:'Suivi',color:'#60a5fa',icon:'🔁'},
+  prospection:{label:'Prospection',color:'#fb923c',icon:'📞'},
+  onboarding:{label:'Onboarding',color:'#67e8f9',icon:'🚀'},
+  autre:{label:'Autre',color:'#f472b6',icon:'📌'},
+};
+
 function renderAll(){
   renderDashboard();
   renderClients();
@@ -1086,8 +1099,6 @@ function delClient(id){if(confirm('Supprimer ce client ?')){DB.clients=DB.client
 /* ══════════════════════════════════════════════════
    PIPELINE
 ══════════════════════════════════════════════════ */
-const STAGES=['contacté','répondu','démo','closing'];
-const STAGE_COLORS={contacté:'var(--muted2)',répondu:'var(--cyan)',démo:'var(--yellow)',closing:'var(--green)'};
 
 document.getElementById('btn-add-rdv').onclick=()=>{
   ['rdv-title','rdv-with','rdv-link','rdv-notes'].forEach(i=>document.getElementById(i).value='');
@@ -1645,14 +1656,6 @@ function drawFinChart(){
    AGENDA RDV
 ══════════════════════════════════════════════════ */
 let agendaDate=new Date();
-const RDV_TYPES={
-  demo:{label:'Démo',color:'#a78bfa',icon:'🎯'},
-  closing:{label:'Closing',color:'#4ade80',icon:'💰'},
-  suivi:{label:'Suivi',color:'#60a5fa',icon:'🔁'},
-  prospection:{label:'Prospection',color:'#fb923c',icon:'📞'},
-  onboarding:{label:'Onboarding',color:'#67e8f9',icon:'🚀'},
-  autre:{label:'Autre',color:'#f472b6',icon:'📌'},
-};
 function agendaPrev(){agendaDate=new Date(agendaDate.getFullYear(),agendaDate.getMonth()-1,1);renderAgenda();}
 function agendaNext(){agendaDate=new Date(agendaDate.getFullYear(),agendaDate.getMonth()+1,1);renderAgenda();}
 
@@ -1740,6 +1743,9 @@ function editRdv(id){
   openModal('modal-rdv');
 }
 function delRdv(id){if(!confirm('Supprimer ce RDV ?'))return;DB.rdvs=DB.rdvs.filter(r=>r.id!==id);saveD();renderAgenda();}
+const _sess=lsGet(SK);
+if(_sess){const _users=getUsers();if(_users[_sess]){CU=_sess;DB=loadD(CU);document.getElementById('overlay').style.display='none';}}
+if(CU)initApp();
 </script>
 </body>
 </html>
